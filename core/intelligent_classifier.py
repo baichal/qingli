@@ -222,17 +222,33 @@ class IntelligentClassifier:
             features["extension_rarity"] = 1
         
         # 内容分析（对于文本文件）
-        if features["extension"] in [".txt", ".docx", ".pdf", ".md"]:
+        if features["extension"] in [".txt", ".docx", ".pdf", ".md", ".rtf", ".odt", ".csv", ".xls", ".xlsx"]:
             try:
                 size = os.path.getsize(file_path)
                 if size < 1024 * 1024:  # 小于1MB
                     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                         content = f.read().lower()
                         # 检查个人内容关键词
-                        personal_content_keywords = ["我", "我的", "个人", "私人", "简历", "照片", "家庭"]
+                        personal_content_keywords = ["我", "我的", "个人", "私人", "简历", "照片", "家庭", "联系方式", "电话", "邮箱", "地址", "身份证", "护照", "银行卡", "工资", "合同", "offer", "推荐信"]
                         for keyword in personal_content_keywords:
                             if keyword in content:
                                 features["content_score"] += 1
+                        
+                        # 检查系统内容关键词
+                        system_content_keywords = ["system", "windows", "registry", "driver", "service", "kernel", "boot", "config"]
+                        for keyword in system_content_keywords:
+                            if keyword in content:
+                                features["system_keywords"] += 0.5
+                        
+                        # 检查软件内容关键词
+                        software_content_keywords = ["appdata", "cache", "temp", "node_modules", "venv", "git", "build", "dist"]
+                        for keyword in software_content_keywords:
+                            if keyword in content:
+                                features["software_keywords"] += 0.5
+                        
+                        # 提取内容模式
+                        content_patterns = self._extract_content_patterns(content)
+                        features["content_patterns"] = content_patterns
             except Exception:
                 pass
         
@@ -263,7 +279,7 @@ class IntelligentClassifier:
     def _calculate_confidence(self, features: Dict) -> float:
         """计算分类置信度"""
         score = 0
-        max_score = 15  # 增加最大分数以容纳新特征
+        max_score = 20  # 增加最大分数以容纳新特征
         
         # 关键词分数
         score += min(features["personal_keywords"] * 0.8, 3)
@@ -283,6 +299,25 @@ class IntelligentClassifier:
         score += features["time_score"] * 0.5
         score += features["creation_score"] * 0.3
         score += features["content_score"] * 0.8
+        
+        # 内容模式特征
+        content_patterns = features.get("content_patterns", {})
+        if content_patterns:
+            # 个人识别信息
+            personal_info_score = content_patterns.get("email_patterns", 0) * 0.5
+            personal_info_score += content_patterns.get("phone_patterns", 0) * 0.5
+            personal_info_score += content_patterns.get("id_patterns", 0) * 0.8
+            personal_info_score += content_patterns.get("address_patterns", 0) * 0.3
+            score += min(personal_info_score, 2)
+            
+            # 个人术语
+            score += content_patterns.get("personal_terms", 0) * 0.3
+            
+            # 系统术语
+            score += content_patterns.get("system_terms", 0) * 0.3
+            
+            # 软件术语
+            score += content_patterns.get("software_terms", 0) * 0.3
         
         # 上下文特征
         if features["context_score"] > 0:
@@ -321,6 +356,32 @@ class IntelligentClassifier:
             if pattern in features["filename"].lower():
                 score += weight * 0.1
         
+        # 内容模式
+        content_patterns = patterns.get("content_patterns", {})
+        if "personal_content" in content_patterns:
+            score += content_patterns["personal_content"] * 0.1
+        
+        # 个人识别信息模式
+        content_patterns = features.get("content_patterns", {})
+        personal_info_patterns = patterns.get("personal_info_patterns", {})
+        for key, weight in personal_info_patterns.items():
+            if content_patterns.get(key, 0) > 0:
+                score += weight * 0.1
+        
+        # 术语模式
+        term_patterns = patterns.get("term_patterns", {})
+        if "personal_terms" in term_patterns and content_patterns.get("personal_terms", 0) > 0:
+            score += term_patterns["personal_terms"] * 0.1
+        if "system_terms" in term_patterns and content_patterns.get("system_terms", 0) > 0:
+            score += term_patterns["system_terms"] * 0.1
+        if "software_terms" in term_patterns and content_patterns.get("software_terms", 0) > 0:
+            score += term_patterns["software_terms"] * 0.1
+        
+        # 上下文模式
+        context_patterns = patterns.get("context_patterns", {})
+        if "personal_context" in context_patterns and features["context_score"] > 0:
+            score += context_patterns["personal_context"] * 0.1
+        
         return score
     
     def _determine_category(self, features: Dict, confidence: float) -> str:
@@ -340,6 +401,23 @@ class IntelligentClassifier:
         
         software_score = features["software_keywords"] + (2 if features["is_software_dir"] else 0)
         software_score += features["extension_rarity"] * 0.5
+        
+        # 内容模式特征
+        content_patterns = features.get("content_patterns", {})
+        if content_patterns:
+            # 个人识别信息
+            personal_info_score = content_patterns.get("email_patterns", 0) + content_patterns.get("phone_patterns", 0) + content_patterns.get("id_patterns", 0)
+            if personal_info_score > 0:
+                personal_score += personal_info_score * 2
+            
+            # 个人术语
+            personal_score += content_patterns.get("personal_terms", 0) * 1.2
+            
+            # 系统术语
+            system_score += content_patterns.get("system_terms", 0) * 1.2
+            
+            # 软件术语
+            software_score += content_patterns.get("software_terms", 0) * 1.2
         
         # 特殊处理：可执行文件的分类
         if features["extension"] == ".exe":
@@ -395,6 +473,19 @@ class IntelligentClassifier:
                 reasons.append("包含个人内容")
             if features["context_score"] > 0:
                 reasons.append("同一目录有其他个人文件")
+            # 内容模式特征
+            content_patterns = features.get("content_patterns", {})
+            if content_patterns:
+                if content_patterns.get("email_patterns", 0) > 0:
+                    reasons.append("包含邮箱地址")
+                if content_patterns.get("phone_patterns", 0) > 0:
+                    reasons.append("包含电话号码")
+                if content_patterns.get("id_patterns", 0) > 0:
+                    reasons.append("包含身份证号")
+                if content_patterns.get("address_patterns", 0) > 0:
+                    reasons.append("包含地址信息")
+                if content_patterns.get("personal_terms", 0) > 0:
+                    reasons.append("包含个人术语")
         elif category == "system":
             if features["system_keywords"] > 0:
                 reasons.append("包含系统关键词")
@@ -404,6 +495,10 @@ class IntelligentClassifier:
                 reasons.append("文件名复杂")
             if features["context_score"] < 0:
                 reasons.append("同一目录有其他系统文件")
+            # 内容模式特征
+            content_patterns = features.get("content_patterns", {})
+            if content_patterns and content_patterns.get("system_terms", 0) > 0:
+                reasons.append("包含系统术语")
         elif category == "software":
             if features["software_keywords"] > 0:
                 reasons.append("包含软件关键词")
@@ -411,6 +506,10 @@ class IntelligentClassifier:
                 reasons.append("在软件目录中")
             if features["extension_rarity"] > 0:
                 reasons.append("扩展名特殊")
+            # 内容模式特征
+            content_patterns = features.get("content_patterns", {})
+            if content_patterns and content_patterns.get("software_terms", 0) > 0:
+                reasons.append("包含软件术语")
         else:
             reasons.append("无法确定类别")
         
@@ -483,6 +582,29 @@ class IntelligentClassifier:
             else:
                 content_patterns["personal_content"] = max(0, content_patterns.get("personal_content", 0) - learning_rate * confidence)
         
+        # 学习内容模式特征
+        content_patterns = features.get("content_patterns", {})
+        if content_patterns:
+            # 学习个人识别信息模式
+            if is_personal:
+                for key in ["email_patterns", "phone_patterns", "id_patterns", "address_patterns"]:
+                    if content_patterns.get(key, 0) > 0:
+                        personal_info_patterns = patterns.get("personal_info_patterns", {})
+                        patterns["personal_info_patterns"] = personal_info_patterns
+                        personal_info_patterns[key] = personal_info_patterns.get(key, 0) + learning_rate * confidence
+            
+            # 学习术语模式
+            term_patterns = patterns.get("term_patterns", {})
+            patterns["term_patterns"] = term_patterns
+            if is_personal:
+                if content_patterns.get("personal_terms", 0) > 0:
+                    term_patterns["personal_terms"] = term_patterns.get("personal_terms", 0) + learning_rate * confidence
+            else:
+                if content_patterns.get("system_terms", 0) > 0:
+                    term_patterns["system_terms"] = term_patterns.get("system_terms", 0) + learning_rate * confidence
+                if content_patterns.get("software_terms", 0) > 0:
+                    term_patterns["software_terms"] = term_patterns.get("software_terms", 0) + learning_rate * confidence
+        
         # 学习上下文特征
         if features["context_score"] != 0:
             context_patterns = patterns.get("context_patterns", {})
@@ -535,6 +657,70 @@ class IntelligentClassifier:
             "marked_system": len(history.get("marked_system", []))
         }
     
+    def _extract_content_patterns(self, content: str) -> Dict:
+        """从内容中提取模式"""
+        patterns = {
+            "personal_terms": 0,
+            "system_terms": 0,
+            "software_terms": 0,
+            "email_patterns": 0,
+            "phone_patterns": 0,
+            "id_patterns": 0,
+            "address_patterns": 0,
+            "date_patterns": 0,
+            "number_patterns": 0
+        }
+        
+        # 邮箱模式
+        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+        email_matches = re.findall(email_pattern, content)
+        patterns["email_patterns"] = len(email_matches)
+        
+        # 电话号码模式
+        phone_pattern = r'1[3-9]\d{9}'  # 中国手机号
+        phone_matches = re.findall(phone_pattern, content)
+        patterns["phone_patterns"] = len(phone_matches)
+        
+        # 身份证号模式
+        id_pattern = r'[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]'
+        id_matches = re.findall(id_pattern, content)
+        patterns["id_patterns"] = len(id_matches)
+        
+        # 地址模式
+        address_pattern = r'[省市区县镇乡村]'
+        address_matches = re.findall(address_pattern, content)
+        patterns["address_patterns"] = len(address_matches)
+        
+        # 日期模式
+        date_pattern = r'\d{4}[-/年]\d{1,2}[-/月]\d{1,2}[日]?'
+        date_matches = re.findall(date_pattern, content)
+        patterns["date_patterns"] = len(date_matches)
+        
+        # 数字模式
+        number_pattern = r'\d{4,}'
+        number_matches = re.findall(number_pattern, content)
+        patterns["number_patterns"] = len(number_matches)
+        
+        # 个人术语
+        personal_terms = ["我", "我的", "个人", "私人", "简历", "照片", "家庭"]
+        for term in personal_terms:
+            if term in content:
+                patterns["personal_terms"] += 1
+        
+        # 系统术语
+        system_terms = ["system", "windows", "registry", "driver"]
+        for term in system_terms:
+            if term in content:
+                patterns["system_terms"] += 1
+        
+        # 软件术语
+        software_terms = ["appdata", "cache", "temp", "node_modules"]
+        for term in software_terms:
+            if term in content:
+                patterns["software_terms"] += 1
+        
+        return patterns
+    
     def _adjust_confidence_threshold(self):
         """自适应调整置信度阈值"""
         history = self.learning_data.get("user_history", {})
@@ -564,7 +750,9 @@ class IntelligentClassifier:
                 "extension_weights": {},
                 "dir_patterns": {},
                 "content_patterns": {},
-                "context_patterns": {}
+                "context_patterns": {},
+                "personal_info_patterns": {},
+                "term_patterns": {}
             },
             "user_history": {
                 "deleted_files": [],
