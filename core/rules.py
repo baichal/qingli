@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 # ─────────────────────────────────────────
 # 当前用户信息
@@ -10,6 +11,23 @@ APPDATA      = os.environ.get("APPDATA", "")
 LOCAL_APPDATA = os.environ.get("LOCALAPPDATA", "")
 
 # ─────────────────────────────────────────
+# 系统目录排除模式（支持所有盘符）
+# ─────────────────────────────────────────
+SYSTEM_DIR_PATTERNS = [
+    r'^[A-Za-z]:\\Windows',
+    r'^[A-Za-z]:\\Program Files',
+    r'^[A-Za-z]:\\Program Files \(x86\)',
+    r'^[A-Za-z]:\\ProgramData',
+    r'^[A-Za-z]:\\\$Recycle\.Bin',
+    r'^[A-Za-z]:\\System Volume Information',
+    r'^[A-Za-z]:\\Recovery',
+    r'^[A-Za-z]:\\\$WinREAgent',
+    r'^[A-Za-z]:\\Users\\All Users',
+    r'^[A-Za-z]:\\Users\\Default',
+    r'^[A-Za-z]:\\Users\\Default User',
+]
+
+# ─────────────────────────────────────────
 # 排除目录
 # ─────────────────────────────────────────
 EXCLUDE_ABSOLUTE_DIRS = [
@@ -18,6 +36,9 @@ EXCLUDE_ABSOLUTE_DIRS = [
     "C:\\Windows\\SysWOW64",
     "C:\\Windows\\WinSxS",
     "C:\\Windows\\Installer",
+    "C:\\Windows\\assembly",
+    "C:\\Windows\\Microsoft.NET",
+    "C:\\Windows\\SoftwareDistribution",
     "C:\\Program Files",
     "C:\\Program Files (x86)",
     "C:\\ProgramData",
@@ -55,6 +76,15 @@ EXCLUDE_DIR_NAMES = [
     "Code Cache",
     "GPUCache",
     "ShaderCache",
+    "crashpad",
+    "crash reports",
+    "CrashDumps",
+    "Microsoft",
+    "Windows",
+    "WinSxS",
+    "assembly",
+    "Installer",
+    "winsxs",
     # 回收站
     "$Recycle.Bin",
     "$RECYCLE.BIN",
@@ -62,6 +92,25 @@ EXCLUDE_DIR_NAMES = [
     "RECYCLE.BIN",
     "Recycled",
     "Recycler",
+    ".trash",
+    # 开发工具缓存
+    ".idea",
+    ".vscode",
+    ".vs",
+    "cmake-build-*",
+    "out",
+    "bin",
+    "obj",
+    "lib",
+    # 浏览器缓存
+    "User Data",
+    "Default",
+    "Cache_Data",
+    # 系统和临时目录
+    "ProgramData",
+    "System Volume Information",
+    "Recovery",
+    "$WinREAgent",
 ]
 
 EXCLUDE_FILE_NAMES = [
@@ -73,7 +122,78 @@ EXCLUDE_FILE_NAMES = [
     "ntuser.dat",
     "ntuser.ini",
     "NTUSER.DAT",
+    "ntuser.dat.LOG*",
+    "UsrClass.dat",
+    "UsrClass.ini",
+    # 系统文件
+    "*.sys",
+    "*.dll",
+    "*.exe",
+    "*.msi",
+    "*.inf",
+    "*.cat",
+    "*.pdb",
+    "*.ocx",
+    "*.scr",
+    "*.drv",
+    "*.cpl",
+    "*.msc",
+    "*.mui",
+    "*.manifest",
+    "*.winmd",
+    "*.appx",
+    "*.msix",
+    # 缓存和临时文件
+    "*.tmp",
+    "*.temp",
+    "*.cache",
+    "*.log",
 ]
+
+# 系统文件扩展名（完全排除）
+SYSTEM_EXTENSIONS = {
+    '.sys', '.dll', '.exe', '.msi', '.inf', '.cat', '.pdb',
+    '.ocx', '.scr', '.drv', '.vxd', '.cpl', '.msc', '.mui',
+    '.manifest', '.winmd', '.appx', '.msix', '.eula',
+    '.tmp', '.temp', '.cache'
+}
+
+def should_exclude_path(path: str) -> bool:
+    """检查路径是否应该被排除（增强版）"""
+    path_lower = path.lower()
+    norm_path = os.path.normpath(path)
+    
+    # 1. 检查系统目录模式
+    for pattern in SYSTEM_DIR_PATTERNS:
+        if re.match(pattern, path, re.IGNORECASE):
+            return True
+    
+    # 2. 检查绝对排除目录
+    for exclude_dir in EXCLUDE_ABSOLUTE_DIRS:
+        exclude_lower = exclude_dir.lower()
+        if path_lower.startswith(exclude_lower + os.sep) or path_lower == exclude_lower:
+            return True
+    
+    # 3. 检查目录名
+    dir_name = os.path.basename(norm_path).lower()
+    if dir_name in [d.lower() for d in EXCLUDE_DIR_NAMES]:
+        return True
+    
+    # 4. 检查系统扩展名
+    ext = os.path.splitext(path)[1].lower()
+    if ext in SYSTEM_EXTENSIONS:
+        return True
+    
+    # 5. 检查系统文件名
+    filename = os.path.basename(path).lower()
+    for pattern in EXCLUDE_FILE_NAMES:
+        if pattern.startswith('*.'):
+            if filename.endswith(pattern[1:]):
+                return True
+        elif filename == pattern.lower():
+            return True
+    
+    return False
 
 # ─────────────────────────────────────────
 # 核心关键词识别表（高优先级，只要包含就识别）

@@ -10,6 +10,7 @@ from . import progress_manager
 from . import smart_recognizer
 from . import logger
 from . import utils
+from . import file_classifier
 
 __all__ = [
     "scanner",
@@ -22,4 +23,5 @@ __all__ = [
     "smart_recognizer",
     "logger",
     "utils",
+    "file_classifier",
 ]
