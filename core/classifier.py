@@ -6,9 +6,12 @@ from .rules import (
     EXCLUDE_DIR_NAMES,
     EXCLUDE_FILE_NAMES,
     MAX_CONTENT_SCAN_SIZE,
+    should_exclude_path,
 )
 # 新增：引入自定义规则匹配
 from .custom_rules import match_custom_rules
+# 新增：引入文件分类器
+from .file_classifier import file_classifier
 
 
 def normalize_path(path: str) -> str:
@@ -16,18 +19,22 @@ def normalize_path(path: str) -> str:
 
 
 def should_exclude_dir(dir_path: str) -> bool:
+    """检查目录是否应该排除（增强版）"""
+    # 1. 使用新的增强排除检查
+    if should_exclude_path(dir_path):
+        return True
+    
+    # 2. 保留原有检查作为补充
     norm = normalize_path(dir_path)
-    for ex in EXCLUDE_ABSOLUTE_DIRS:
-        ex_norm = normalize_path(ex)
-        if norm == ex_norm or norm.startswith(ex_norm + os.sep):
-            return True
     dir_name = os.path.basename(dir_path)
     dir_name_lower = dir_name.lower()
+    
     for ex_name in EXCLUDE_DIR_NAMES:
         if dir_name_lower == ex_name.lower():
             return True
         if ex_name.lower() in norm:
             return True
+    
     return False
 
 
@@ -51,13 +58,21 @@ def _check_content_keywords(file_path: str, keywords: list) -> bool:
 
 def classify_file(file_path: str) -> dict | None:
     """
-    文件分类入口
-    优先级：自定义规则 > 内置规则
+    文件分类入口（增强版）
+    优先级：系统文件排除 > 自定义规则 > 内置规则
     """
     file_path = os.path.normpath(file_path)
     file_name = os.path.basename(file_path)
 
-    # 排除系统文件
+    # 1. 首先使用增强的路径排除检查
+    if should_exclude_path(file_path):
+        return None
+
+    # 2. 检查是否为系统文件（使用新的文件分类器）
+    if file_classifier.is_system_file(file_path):
+        return None
+
+    # 3. 排除系统文件
     if should_exclude_file(file_name):
         return None
 
@@ -66,7 +81,7 @@ def classify_file(file_path: str) -> dict | None:
     if custom_match is not None:
         return custom_match
 
-    # ── 2. 内置规则匹配 ────────────────────────
+    # ── 内置规则匹配 ────────────────────────
     return _classify_builtin(file_path, file_name)
 
 
