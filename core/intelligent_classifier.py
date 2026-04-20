@@ -221,8 +221,15 @@ class IntelligentClassifier:
         if features["extension"] not in common_extensions:
             features["extension_rarity"] = 1
         
-        # 内容分析（对于文本文件）
-        if features["extension"] in [".txt", ".docx", ".pdf", ".md", ".rtf", ".odt", ".csv", ".xls", ".xlsx"]:
+        # 内容分析（对于可查看内容的文件）
+        # 可查看内容的文件类型
+        content_viewable_extensions = [".txt", ".docx", ".pdf", ".md", ".rtf", ".odt", ".csv", ".xls", ".xlsx", ".json", ".xml", ".html", ".css", ".js", ".py", ".java", ".cpp", ".h", ".c"]
+        
+        # 不可查看内容的文件类型（跳过内容分析）
+        content_non_viewable_extensions = [".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".zip", ".rar", ".7z", ".exe", ".dll", ".sys", ".msi", ".iso", ".img"]
+        
+        # 对于可查看内容的文件，进行内容分析
+        if features["extension"] in content_viewable_extensions:
             try:
                 size = os.path.getsize(file_path)
                 if size < 1024 * 1024:  # 小于1MB
@@ -251,6 +258,61 @@ class IntelligentClassifier:
                         features["content_patterns"] = content_patterns
             except Exception:
                 pass
+        # 对于不可查看内容的文件，跳过内容分析，仅根据文件名和路径进行分析
+        elif features["extension"] in content_non_viewable_extensions:
+            # 仅根据文件名和路径进行分析
+            # 添加针对非文本文件的特殊处理逻辑
+            filename_lower = features["filename"].lower()
+            
+            # 个人文件相关关键词
+            personal_file_keywords = ["照片", "图片", "视频", "音乐", "电影", "家庭", "个人", "私人", "简历", "作品集", "相册", "旅行", "婚礼", "生日", "纪念日", "个人资料"]
+            
+            # 系统文件相关关键词
+            system_file_keywords = ["system", "windows", "driver", "service", "kernel", "boot", "config", "update", "patch"]
+            
+            # 软件文件相关关键词
+            software_file_keywords = ["setup", "install", "uninstall", "update", "app", "software", "driver", "plugin", "extension", "package", "installer", "archive"]
+            
+            # 软件文件扩展名
+            software_extensions = [".exe", ".msi", ".dll", ".sys", ".zip", ".rar", ".7z"]
+            
+            # 媒体文件扩展名
+            media_extensions = [".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+            
+            # 根据文件名关键词进行分析
+            for keyword in personal_file_keywords:
+                if keyword in filename_lower:
+                    features["personal_keywords"] += 1
+            
+            for keyword in system_file_keywords:
+                if keyword in filename_lower:
+                    features["system_keywords"] += 1
+            
+            for keyword in software_file_keywords:
+                if keyword in filename_lower:
+                    features["software_keywords"] += 1
+            
+            # 对于软件文件扩展名的特殊处理
+            if features["extension"] in software_extensions:
+                # 软件文件扩展名更可能是软件文件
+                features["software_keywords"] += 2
+                # 检查是否在下载目录中
+                path_lower = features["path"].lower()
+                if "downloads" in path_lower:
+                    features["software_keywords"] += 1
+            
+            # 对于媒体文件的特殊处理
+            if features["extension"] in media_extensions:
+                # 媒体文件更可能是个人文件
+                if features["is_user_dir"]:
+                    features["personal_keywords"] += 1
+                # 检查是否在个人媒体目录中
+                path_lower = features["path"].lower()
+                media_dirs = ["pictures", "photos", "images", "videos", "music", "media", "相册", "视频", "音乐"]
+                for dir_name in media_dirs:
+                    if f"{os.sep}{dir_name}{os.sep}" in path_lower:
+                        features["personal_keywords"] += 2
+                        break
         
         # 上下文分析（同一目录下的文件）
         try:
