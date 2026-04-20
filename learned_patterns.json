@@ -1,0 +1,24 @@
+{
+  "path_keywords": [
+    "xitong",
+    "desktop",
+    "documents",
+    "leidian9",
+    "pictures",
+    "memoryopt-main"
+  ],
+  "dir_patterns": [],
+  "filename_patterns": [],
+  "extension_weights": {
+    ".zip": 5
+  },
+  "positive_examples": [
+    "E:\\xitong\\Desktop\\工牌",
+    "E:\\xitong\\Desktop\\星辰",
+    "E:\\xitong\\Documents",
+    "E:\\xitong\\Documents\\leidian9\\Pictures",
+    "E:\\xitong\\Documents\\leidian9\\Pictures\\MemoryOpt-main"
+  ],
+  "negative_examples": [],
+  "learn_count": 5
+}
