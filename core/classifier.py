@@ -12,6 +12,8 @@ from .rules import (
 from .custom_rules import match_custom_rules
 # 新增：引入文件分类器
 from .file_classifier import file_classifier
+# 新增：引入智能分类器
+from .intelligent_classifier import intelligent_classifier
 
 
 def normalize_path(path: str) -> str:
@@ -59,7 +61,7 @@ def _check_content_keywords(file_path: str, keywords: list) -> bool:
 def classify_file(file_path: str) -> dict | None:
     """
     文件分类入口（增强版）
-    优先级：系统文件排除 > 自定义规则 > 内置规则
+    优先级：系统文件排除 > 智能分类 > 自定义规则 > 内置规则
     """
     file_path = os.path.normpath(file_path)
     file_name = os.path.basename(file_path)
@@ -68,11 +70,37 @@ def classify_file(file_path: str) -> dict | None:
     if should_exclude_path(file_path):
         return None
 
-    # 2. 检查是否为系统文件（使用新的文件分类器）
+    # 2. 使用智能分类器进行分类
+    try:
+        # 获取文件状态信息
+        stat_info = {}
+        if os.path.exists(file_path):
+            stat = os.stat(file_path)
+            stat_info = {
+                "size": stat.st_size,
+                "mtime_ts": int(stat.st_mtime)
+            }
+        
+        # 使用智能分类器
+        intelligent_result = intelligent_classifier.classify_file(file_path, stat_info)
+        
+        # 如果智能分类器确定为系统或软件文件，直接排除
+        if intelligent_result["category"] in ["system", "software"] and intelligent_result["confidence"] > 0.7:
+            return None
+        
+        # 如果智能分类器确定为个人文件，标记为疑似个人内容
+        if intelligent_result["category"] == "personal" and intelligent_result["confidence"] > 0.5:
+            # 继续执行后续分类，但添加智能分类信息
+            pass
+    except Exception:
+        # 智能分类失败时，继续使用传统分类
+        pass
+
+    # 3. 检查是否为系统文件（使用新的文件分类器）
     if file_classifier.is_system_file(file_path):
         return None
 
-    # 3. 排除系统文件
+    # 4. 排除系统文件
     if should_exclude_file(file_name):
         return None
 

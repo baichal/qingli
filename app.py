@@ -27,6 +27,8 @@ from core.personal_dirs import (
     list_personal_dirs, add_personal_dir, remove_personal_dir,
     clear_all_personal_dirs, is_personal_dir,
 )
+# 新增：引入智能分类器
+from core.intelligent_classifier import intelligent_classifier
 
 app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
@@ -275,6 +277,13 @@ def file_delete_trash():
 
     result = delete_to_trash(valid_paths)
 
+    # 从用户操作中学习：删除的文件不是个人文件
+    if valid_paths:
+        try:
+            intelligent_classifier.learn_from_action(valid_paths, "delete")
+        except Exception:
+            pass
+
     # 不存在的路径也从结果集移除（已经没了）
     _remove_from_results(paths)
 
@@ -302,6 +311,13 @@ def file_delete_permanent():
     invalid_paths = [p for p in paths if not os.path.exists(p)]
 
     result = delete_permanently(valid_paths)
+
+    # 从用户操作中学习：删除的文件不是个人文件
+    if valid_paths:
+        try:
+            intelligent_classifier.learn_from_action(valid_paths, "delete")
+        except Exception:
+            pass
 
     _remove_from_results(paths)
 
@@ -716,6 +732,85 @@ def api_smart_patterns():
         "success": True,
         "patterns": patterns,
     })
+
+
+# ─────────────────────────────────────────
+# 智能分类器 API
+# ─────────────────────────────────────────
+
+@app.route("/api/intelligent/classify", methods=["POST"])
+def api_intelligent_classify():
+    """使用智能分类器分类文件"""
+    data = request.get_json() or {}
+    file_path = data.get("path", "").strip()
+    
+    if not file_path:
+        return jsonify({"success": False, "msg": "请提供文件路径"})
+    
+    try:
+        # 获取文件状态信息
+        stat_info = {}
+        if os.path.exists(file_path):
+            stat = os.stat(file_path)
+            stat_info = {
+                "size": stat.st_size,
+                "mtime_ts": int(stat.st_mtime)
+            }
+        
+        result = intelligent_classifier.classify_file(file_path, stat_info)
+        return jsonify({
+            "success": True,
+            "result": result
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
+
+
+@app.route("/api/intelligent/feedback", methods=["POST"])
+def api_intelligent_feedback():
+    """提供分类反馈，让智能分类器学习"""
+    data = request.get_json() or {}
+    file_path = data.get("path", "").strip()
+    is_personal = data.get("is_personal", True)
+    confidence = data.get("confidence", 1.0)
+    
+    if not file_path:
+        return jsonify({"success": False, "msg": "请提供文件路径"})
+    
+    try:
+        intelligent_classifier.learn_from_feedback(file_path, is_personal, confidence)
+        return jsonify({
+            "success": True,
+            "msg": "学习成功"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
+
+
+@app.route("/api/intelligent/stats", methods=["GET"])
+def api_intelligent_stats():
+    """获取智能分类器学习统计信息"""
+    try:
+        stats = intelligent_classifier.get_learning_stats()
+        return jsonify({
+            "success": True,
+            "stats": stats
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
+
+
+@app.route("/api/intelligent/reset", methods=["POST"])
+def api_intelligent_reset():
+    """重置智能分类器学习数据"""
+    try:
+        intelligent_classifier.reset_learning()
+        return jsonify({
+            "success": True,
+            "msg": "学习数据已重置"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
 
 
 # ─────────────────────────────────────────
