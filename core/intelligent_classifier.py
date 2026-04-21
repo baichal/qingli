@@ -7,6 +7,8 @@ from typing import Tuple, Dict, Optional, List
 from collections import Counter
 import hashlib
 
+import threading
+
 class IntelligentClassifier:
     """增强的智能文件分类器 - 具有自主判断能力"""
     
@@ -16,9 +18,31 @@ class IntelligentClassifier:
     def __init__(self):
         self.learning_data = self._load_learning_data()
         self._setup_patterns()
+        self._lock = threading.RLock()  # 可重入锁，用于线程安全
     
-    def _load_learning_data(self) -> Dict:
+    def _load_learning_data(self, recursion_count: int = 0) -> Dict:
         """加载学习数据"""
+        if recursion_count > 3:
+            return {
+                "version": 1,
+                "patterns": {
+                    "personal_keywords": [],
+                    "system_keywords": [],
+                    "software_keywords": [],
+                    "filename_patterns": {},
+                    "extension_weights": {},
+                    "dir_patterns": {}
+                },
+                "user_history": {
+                    "deleted_files": [],
+                    "kept_files": [],
+                    "marked_personal": [],
+                    "marked_system": []
+                },
+                "confidence_threshold": 0.6,
+                "learning_rate": 0.1,
+                "total_learning": 0
+            }
         if not os.path.exists(self.LEARNING_DATA_FILE):
             return {
                 "version": 1,
@@ -44,13 +68,14 @@ class IntelligentClassifier:
             with open(self.LEARNING_DATA_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
-            return self._load_learning_data()
+            return self._load_learning_data(recursion_count + 1)
     
     def _save_learning_data(self):
         """保存学习数据"""
         try:
-            with open(self.LEARNING_DATA_FILE, "w", encoding="utf-8") as f:
-                json.dump(self.learning_data, f, ensure_ascii=False, indent=2)
+            with self._lock:
+                with open(self.LEARNING_DATA_FILE, "w", encoding="utf-8") as f:
+                    json.dump(self.learning_data, f, ensure_ascii=False, indent=2)
         except Exception as e:
             print(f"保存学习数据失败: {e}")
     
@@ -58,31 +83,127 @@ class IntelligentClassifier:
         """设置初始模式"""
         # 个人文件关键词
         self.personal_keywords = set([
-            "我的", "私人", "个人", "private", "personal", "my",
-            "简历", "resume", "cv", "身份证", "护照", "passport",
-            "合同", "contract", "offer", "薪资", "工资", "salary",
-            "银行", "bank", "保险", "insurance", "医疗", "medical",
-            "日记", "diary", "笔记", "note", "备忘录", "memo",
-            "照片", "photo", "picture", "image", "pic", "相册",
-            "视频", "video", "movie", "film", "音乐", "music",
-            "下载", "download", "桌面", "desktop", "文档", "document",
-            "备份", "backup", "存档", "archive", "家庭", "family",
-            "旅行", "travel", "旅游", "trip", "婚礼", "wedding",
-            "生日", "birthday", "纪念日", "anniversary"
+            "我的", "私人", "个人", "private", "personal", "my", "mine",
+            "简历", "resume", "cv", "身份证", "护照", "passport", "idcard",
+            "合同", "contract", "offer", "薪资", "工资", "salary", "payroll",
+            "银行", "bank", "保险", "insurance", "医疗", "medical", "health",
+            "日记", "diary", "笔记", "note", "备忘录", "memo", "journal",
+            "照片", "photo", "picture", "image", "pic", "相册", "album", "img",
+            "视频", "video", "movie", "film", "音乐", "music", "song", "audio",
+            "下载", "download", "桌面", "desktop", "文档", "document", "doc",
+            "备份", "backup", "存档", "archive", "家庭", "family", "home",
+            "旅行", "travel", "旅游", "trip", "vacation", "婚礼", "wedding",
+            "生日", "birthday", "纪念日", "anniversary", "庆祝", "celebration",
+            "个人项目", "personal project", "我的项目", "my project",
+            "个人资料", "personal info", "个人信息", "personal information",
+            "联系方式", "contact", "联系信息", "contact info",
+            "电话号码", "phone", "手机号码", "mobile", "cell",
+            "邮箱", "email", "电子邮件", "e-mail",
+            "地址", "address", "家庭地址", "home address",
+            "银行卡", "bank card", "信用卡", "credit card",
+            "驾照", "driver license", "驾驶证", "driving license",
+            "学历", "education", "学位", "degree", "毕业证", "diploma",
+            "证书", "certificate", "资格证", "certification",
+            "成绩单", "transcript", "成绩", "grades",
+            "推荐信", "recommendation", "reference letter",
+            "个人总结", "personal summary", "工作总结", "work summary",
+            "计划", "plan", "规划", "planning", "方案", "scheme",
+            "报告", "report", "总结", "summary", "分析", "analysis",
+            "设计", "design", "创意", "creativity", "创意设计", "creative design",
+            "作品", "work", "作品集", "portfolio", "项目", "project"
         ])
         
         # 系统文件关键词
         self.system_keywords = set([
             "system", "windows", "program", "driver", "service",
             "kernel", "registry", "boot", "config", "dll", "sys",
-            "exe", "msi", "inf", "cat", "pdb", "ocx", "scr"
+            "exe", "msi", "inf", "cat", "pdb", "ocx", "scr",
+            "win32", "win64", "x86", "x64", "system32", "syswow64",
+            "ntdll", "kernel32", "user32", "gdi32", "advapi32", "shell32",
+            "systemroot", "windir", "program files", "programdata",
+            "appdata", "local settings", "common files", "microsoft",
+            "windows nt", "windows defender", "windows update",
+            "device manager", "control panel", "registry editor",
+            "task manager", "system configuration", "boot configuration"
         ])
         
         # 软件文件关键词
         self.software_keywords = set([
             "appdata", "cache", "temp", "tmp", "node_modules",
             "venv", "git", "build", "dist", "logs", "crash",
-            "browser", "chrome", "firefox", "edge", "opera"
+            "browser", "chrome", "firefox", "edge", "opera",
+            "application data", "local", "roaming", "locallow",
+            "program files", "program files (x86)", "common files",
+            "microsoft", "adobe", "google", "mozilla", "apple",
+            "java", "python", "node", "npm", "yarn", "pip",
+            "docker", "virtualbox", "vmware", "visual studio",
+            "eclipse", "intellij", "jetbrains", "vscode", "sublime",
+            "photoshop", "illustrator", "premiere", "after effects",
+            "word", "excel", "powerpoint", "outlook", "access",
+            "chrome", "firefox", "edge", "opera", "safari",
+            "wechat", "qq", "钉钉", "企业微信", "飞书", "lark",
+            "dropbox", "google drive", "onedrive", "百度网盘", "阿里云盘",
+            "spotify", "qq音乐", "网易云音乐", "酷狗音乐",
+            "steam", "epic games", "origin", "battle.net",
+            "photoshop", "lightroom", "illustrator", "indesign",
+            "autocad", "3ds max", "maya", "blender",
+            "unity", "unreal", "godot", "game maker",
+            "wireshark", "postman", "insomnia", "soapui",
+            "mysql", "postgresql", "mongodb", "redis", "elasticsearch",
+            "nginx", "apache", "iis", "tomcat", "jetty",
+            "docker", "kubernetes", "ansible", "terraform", "chef",
+            "jenkins", "gitlab", "github", "bitbucket", "azure devops",
+            "vscode", "atom", "sublime text", "notepad++", "vim", "emacs",
+            "intellij idea", "eclipse", "netbeans", "visual studio code",
+            "pycharm", "webstorm", "phpstorm", "rubymine", "clion",
+            "android studio", "xcode", "visual studio", "visual studio community",
+            "sql server", "oracle", "db2", "sqlite", "mariadb",
+            "chrome", "firefox", "edge", "opera", "safari", "brave",
+            "thunderbird", "outlook", "mail", "gmail", "yahoo mail",
+            "skype", "teams", "slack", "discord", "zoom", "webex",
+            "photoshop", "lightroom", "illustrator", "indesign", "premiere", "after effects",
+            "word", "excel", "powerpoint", "outlook", "access", "publisher",
+            "acrobat", "reader", "pdf", "adobe reader", "foxit reader",
+            "vlc", "media player", "itunes", "spotify", "winamp", "foobar2000",
+            "photoshop", "gimp", "paint.net", "corel draw", "affinity photo",
+            "autocad", "sketchup", "revit", "archicad", "vectorworks",
+            "3ds max", "maya", "blender", "cinema 4d", "houdini",
+            "unity", "unreal engine", "godot", "game maker studio", "construct",
+            "audacity", "adobe audition", "logic pro", "pro tools", "garageband",
+            "premiere pro", "final cut pro", "avid media composer", "davinci resolve",
+            "after effects", "nuke", "fusion", "blender", "cinema 4d",
+            "figma", "sketch", "adobe xd", "invision", "principle",
+            "wordpress", "joomla", "drupal", "magento", "shopify", "wix",
+            "apache", "nginx", "iis", "tomcat", "jetty", "jboss",
+            "mysql", "postgresql", "mongodb", "redis", "elasticsearch", "cassandra",
+            "python", "java", "javascript", "typescript", "php", "ruby", "go", "rust", "c", "c++", "c#", "swift", "kotlin", "dart", "scala", "perl", "bash", "powershell", "batch",
+            "node.js", "express", "react", "angular", "vue", "svelte", "next.js", "nuxt.js", "gatsby", "sapper", "nestjs", "fastify", "koa", "hapi", "express",
+            "django", "flask", "fastapi", "bottle", "pyramid", "tornado", "cherrypy", "web2py", "falcon", "sanic",
+            "spring", "spring boot", "spring mvc", "hibernate", "mybatis", "struts", "jsf", "vaadin", "play framework", "vert.x",
+            "laravel", "symfony", "codeigniter", "yii", "cakephp", "zend framework", "slim", "lumen", "phalcon", "fuelphp",
+            "rails", "sinatra", "padrino", "hanami", "cuba", "roda", "ramaze", "merb", "mojolicious",
+            "gin", "echo", "fiber", "beego", "chi", "martini", "revel", "iris", "buffalo",
+            "actix", "rocket", "warp", "tide", "axum", "salvo", "poem", "gotham", "nickel",
+            "flask", "django", "fastapi", "bottle", "pyramid", "tornado", "cherrypy", "web2py", "falcon", "sanic",
+            "express", "koa", "hapi", "fastify", "nestjs", "adonis", "sails", "loopback", "meteor", "mean", "mern",
+            "react", "vue", "angular", "svelte", "preact", "inferno", "riot", "solid", "qwik", "lit",
+            "redux", "mobx", "zustand", "jotai", "recoil", "valtio", "xstate", "immer", "normalizr",
+            "webpack", "vite", "rollup", "parcel", "browserify", "gulp", "grunt", "esbuild", "swc",
+            "babel", "typescript", "coffeescript", "elm", "reason", "purescript", "clojurescript", "livescript",
+            "sass", "less", "stylus", "postcss", "tailwind", "bootstrap", "foundation", "materialize", "bulma",
+            "jest", "mocha", "chai", "sinon", "cypress", "puppeteer", "playwright", "testing-library", "enzyme",
+            "eslint", "prettier", "stylelint", "commitlint", "husky", "lint-staged", "standard", "semistandard",
+            "npm", "yarn", "pnpm", "lerna", "nx", "rush", "workspaces", "monorepo", "polyrepo",
+            "git", "github", "gitlab", "bitbucket", "azure devops", "sourcehut", "gitea", "forgejo",
+            "jenkins", "travis", "circleci", "github actions", "gitlab ci", "azure pipelines", "bitbucket pipelines",
+            "docker", "kubernetes", "docker compose", "docker swarm", "minikube", "kind", "k3s", "openshift", "rancher",
+            "terraform", "ansible", "puppet", "chef", "saltstack", "packer", "vagrant", "cloudformation", "arm",
+            "aws", "azure", "google cloud", "digitalocean", "linode", "vultr", "heroku", "netlify", "vercel", "github pages",
+            "mysql", "postgresql", "mongodb", "redis", "elasticsearch", "cassandra", "dynamodb", "aurora", "neptune", "documentdb",
+            "sql", "nosql", "newsql", "graphql", "rest", "grpc", "soap", "graphql", "restful", "api", "microservices", "monolith",
+            "frontend", "backend", "fullstack", "mobile", "desktop", "web", "ios", "android", "flutter", "react native", "xamarin", "ionic", "cordova",
+            "agile", "scrum", "kanban", "waterfall", "devops", "ci/cd", "continuous integration", "continuous deployment", "continuous delivery",
+            "agile", "scrum", "kanban", "waterfall", "devops", "ci/cd", "continuous integration", "continuous deployment", "continuous delivery"
         ])
     
     def classify_file(self, file_path: str, stat_info: Optional[Dict] = None) -> Dict:
@@ -138,16 +259,37 @@ class IntelligentClassifier:
         path_lower = file_path.lower()
         filename_lower = features["filename"].lower()
         
-        # 关键词匹配
+        # 关键词匹配（添加单词边界检查）
         for keyword in self.personal_keywords:
-            if keyword in path_lower:
-                features["personal_keywords"] += 1
+            if len(keyword) < 3:
+                # 短关键词要求完整单词匹配
+                pattern = r'\b' + re.escape(keyword) + r'\b'
+                if re.search(pattern, path_lower):
+                    features["personal_keywords"] += 1
+            else:
+                # 长关键词可以直接包含匹配，但也要考虑边界
+                if keyword in path_lower:
+                    # 检查是否是完整单词或路径组件
+                    if re.search(r'[\\/\s\._-]' + re.escape(keyword) + r'[\\/\s\._-]|^' + re.escape(keyword) + r'[\\/\s\._-]|[\\/\s\._-]' + re.escape(keyword) + r'$|^' + re.escape(keyword) + r'$', path_lower):
+                        features["personal_keywords"] += 1
         for keyword in self.system_keywords:
-            if keyword in path_lower:
-                features["system_keywords"] += 1
+            if len(keyword) < 3:
+                pattern = r'\b' + re.escape(keyword) + r'\b'
+                if re.search(pattern, path_lower):
+                    features["system_keywords"] += 1
+            else:
+                if keyword in path_lower:
+                    if re.search(r'[\\/\s\._-]' + re.escape(keyword) + r'[\\/\s\._-]|^' + re.escape(keyword) + r'[\\/\s\._-]|[\\/\s\._-]' + re.escape(keyword) + r'$|^' + re.escape(keyword) + r'$', path_lower):
+                        features["system_keywords"] += 1
         for keyword in self.software_keywords:
-            if keyword in path_lower:
-                features["software_keywords"] += 1
+            if len(keyword) < 3:
+                pattern = r'\b' + re.escape(keyword) + r'\b'
+                if re.search(pattern, path_lower):
+                    features["software_keywords"] += 1
+            else:
+                if keyword in path_lower:
+                    if re.search(r'[\\/\s\._-]' + re.escape(keyword) + r'[\\/\s\._-]|^' + re.escape(keyword) + r'[\\/\s\._-]|[\\/\s\._-]' + re.escape(keyword) + r'$|^' + re.escape(keyword) + r'$', path_lower):
+                        features["software_keywords"] += 1
         
         # 目录特征
         user_profile = os.environ.get("USERPROFILE", "")
@@ -155,24 +297,43 @@ class IntelligentClassifier:
             features["is_user_dir"] = True
             
             # 检查是否在个人目录
-            personal_dirs = ["desktop", "documents", "downloads", "pictures", "videos", "music"]
+            personal_dirs = [
+                "desktop", "documents", "downloads", "pictures", "videos", "music",
+                "favorites", "contacts", "links", "saved games", "searches", "3d objects",
+                "onedrive", "dropbox", "google drive", "box", "icloud",
+                "个人", "私人", "我的文档", "我的图片", "我的视频", "我的音乐",
+                "documents and settings", "my documents", "my pictures", "my videos", "my music"
+            ]
             for dir_name in personal_dirs:
                 if f"{os.sep}{dir_name}{os.sep}" in path_lower:
                     features["personal_keywords"] += 2
                     break
         
         # 系统目录检查
-        system_dirs = ["windows", "program files", "programdata", "syswow64", "system32"]
+        system_dirs = [
+            "windows", "program files", "program files (x86)", "programdata", 
+            "syswow64", "system32", "winnt", "system volume information",
+            "recycler", "$recycle.bin", "appdata", "local settings",
+            "common files", "microsoft", "windows.old", "windowsapps",
+            "windows\system32", "windows\syswow64", "windows\system", "windows\inf"
+        ]
         for dir_name in system_dirs:
-            if f"{os.sep}{dir_name}{os.sep}" in path_lower:
+            if f"{os.sep}{dir_name}{os.sep}" in path_lower or dir_name in path_lower:
                 features["is_system_dir"] = True
                 features["system_keywords"] += 2
                 break
         
         # 软件目录检查
-        software_dirs = ["appdata", "node_modules", "venv", ".git", "build", "dist"]
+        software_dirs = [
+            "appdata\local", "appdata\roaming", "appdata\locallow",
+            "node_modules", "venv", "virtualenv", "env", ".venv",
+            ".git", "build", "dist", "target", "obj", "bin", "lib",
+            "cache", "temp", "tmp", "logs", "crash", "debug", "release",
+            "node.js", "npm", "yarn", "pip", "composer", "gradle", "maven",
+            "docker", "virtualbox", "vmware", "wsl", "linux", "ubuntu", "debian"
+        ]
         for dir_name in software_dirs:
-            if f"{os.sep}{dir_name}{os.sep}" in path_lower:
+            if f"{os.sep}{dir_name}{os.sep}" in path_lower or dir_name in path_lower:
                 features["is_software_dir"] = True
                 features["software_keywords"] += 2
                 break
@@ -223,32 +384,63 @@ class IntelligentClassifier:
         
         # 内容分析（对于可查看内容的文件）
         # 可查看内容的文件类型
-        content_viewable_extensions = [".txt", ".docx", ".pdf", ".md", ".rtf", ".odt", ".csv", ".xls", ".xlsx", ".json", ".xml", ".html", ".css", ".js", ".py", ".java", ".cpp", ".h", ".c"]
+        content_viewable_extensions = [".txt", ".docx", ".pdf", ".md", ".rtf", ".odt", ".csv", ".xls", ".xlsx", ".json", ".xml", ".html", ".css", ".js", ".py", ".java", ".cpp", ".h", ".c", ".log", ".ini", ".conf", ".cfg"]
         
         # 不可查看内容的文件类型（跳过内容分析）
-        content_non_viewable_extensions = [".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".zip", ".rar", ".7z", ".exe", ".dll", ".sys", ".msi", ".iso", ".img"]
+        content_non_viewable_extensions = [".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".zip", ".rar", ".7z", ".exe", ".dll", ".sys", ".msi", ".iso", ".img", ".bin", ".dat", ".db", ".sqlite", ".bak", ".tmp"]
         
         # 对于可查看内容的文件，进行内容分析
         if features["extension"] in content_viewable_extensions:
             try:
                 size = os.path.getsize(file_path)
-                if size < 1024 * 1024:  # 小于1MB
+                # 限制文件大小，避免内存使用过高
+                if size < 512 * 1024:  # 小于512KB
                     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        content = f.read().lower()
+                        # 限制读取内容长度
+                        content = f.read(100000).lower()  # 最多读取100KB
                         # 检查个人内容关键词
-                        personal_content_keywords = ["我", "我的", "个人", "私人", "简历", "照片", "家庭", "联系方式", "电话", "邮箱", "地址", "身份证", "护照", "银行卡", "工资", "合同", "offer", "推荐信"]
+                        personal_content_keywords = [
+                            "我", "我的", "个人", "私人", "简历", "照片", "家庭", "联系方式", "电话", "邮箱", "地址", "身份证", "护照", "银行卡", "工资", "合同", "offer", "推荐信",
+                            "个人信息", "个人资料", "个人总结", "个人计划", "个人项目", "个人作品", "个人简历", "个人照片", "个人视频", "个人音乐",
+                            "家庭照片", "家庭视频", "家庭聚会", "家庭旅行", "家庭计划", "家庭活动",
+                            "联系方式", "联系信息", "电话号码", "手机号码", "电子邮箱", "邮寄地址", "家庭地址", "工作地址",
+                            "身份证号", "护照号", "银行卡号", "信用卡号", "社保号", "医保号", "驾照号", "学生证号",
+                            "薪资", "工资", "奖金", "福利", "待遇", "收入", "支出", "财务", "理财", "投资",
+                            "合同", "协议", "条款", "条件", "约定", "承诺", "保证", "责任", "义务", "权利",
+                            "offer", "录用", "入职", "离职", "晋升", "调岗", "培训", "考核", "绩效", "评价",
+                            "推荐信", "推荐", "介绍", "评价", "证明", "证书", "资质", "资格", "能力", "技能"
+                        ]
                         for keyword in personal_content_keywords:
                             if keyword in content:
                                 features["content_score"] += 1
                         
                         # 检查系统内容关键词
-                        system_content_keywords = ["system", "windows", "registry", "driver", "service", "kernel", "boot", "config"]
+                        system_content_keywords = [
+                            "system", "windows", "registry", "driver", "service", "kernel", "boot", "config",
+                            "operating system", "os", "windows update", "device manager", "control panel", "task manager",
+                            "registry editor", "system configuration", "boot configuration", "device driver", "system service",
+                            "kernel mode", "user mode", "system32", "syswow64", "ntdll", "kernel32", "user32", "gdi32",
+                            "advapi32", "shell32", "win32", "win64", "x86", "x64", "32bit", "64bit",
+                            "systemroot", "windir", "program files", "programdata", "common files", "microsoft",
+                            "windows nt", "windows defender", "windows firewall", "windows security", "windows defender firewall"
+                        ]
                         for keyword in system_content_keywords:
                             if keyword in content:
                                 features["system_keywords"] += 0.5
                         
                         # 检查软件内容关键词
-                        software_content_keywords = ["appdata", "cache", "temp", "node_modules", "venv", "git", "build", "dist"]
+                        software_content_keywords = [
+                            "appdata", "cache", "temp", "node_modules", "venv", "git", "build", "dist",
+                            "application", "software", "program", "app", "tool", "utility", "library", "framework",
+                            "package", "dependency", "module", "component", "plugin", "extension", "addon", "feature",
+                            "installation", "setup", "install", "uninstall", "update", "upgrade", "downgrade", "patch",
+                            "development", "dev", "production", "prod", "test", "debug", "release", "build",
+                            "compilation", "compile", "link", "build system", "make", "cmake", "gradle", "maven",
+                            "npm", "yarn", "pip", "composer", "nuget", "cargo", "go mod", "gem",
+                            "git", "github", "gitlab", "bitbucket", "version control", "source control", "repository", "repo",
+                            "docker", "container", "kubernetes", "k8s", "orchestration", "deployment", "devops",
+                            "ci", "cd", "continuous integration", "continuous deployment", "jenkins", "travis", "circleci", "github actions"
+                        ]
                         for keyword in software_content_keywords:
                             if keyword in content:
                                 features["software_keywords"] += 0.5
@@ -314,13 +506,15 @@ class IntelligentClassifier:
                         features["personal_keywords"] += 2
                         break
         
-        # 上下文分析（同一目录下的文件）
+        # 上下文分析（同一目录、父目录和子目录的文件）
         try:
             dir_path = features["dir_path"]
             if os.path.exists(dir_path):
+                # 同一目录分析
                 files_in_dir = os.listdir(dir_path)
                 personal_file_count = 0
                 system_file_count = 0
+                software_file_count = 0
                 
                 for file in files_in_dir[:20]:  # 只分析前20个文件
                     file_lower = file.lower()
@@ -328,11 +522,48 @@ class IntelligentClassifier:
                         personal_file_count += 1
                     if any(sk in file_lower for sk in self.system_keywords):
                         system_file_count += 1
+                    if any(swk in file_lower for swk in self.software_keywords):
+                        software_file_count += 1
                 
-                if personal_file_count > system_file_count:
-                    features["context_score"] = 1
-                elif system_file_count > personal_file_count:
-                    features["context_score"] = -1
+                # 父目录分析
+                parent_dir = os.path.dirname(dir_path)
+                if os.path.exists(parent_dir) and parent_dir != dir_path:
+                    parent_files = os.listdir(parent_dir)
+                    for file in parent_files[:10]:  # 只分析前10个文件
+                        file_lower = file.lower()
+                        if any(pk in file_lower for pk in self.personal_keywords):
+                            personal_file_count += 0.5
+                        if any(sk in file_lower for sk in self.system_keywords):
+                            system_file_count += 0.5
+                        if any(swk in file_lower for swk in self.software_keywords):
+                            software_file_count += 0.5
+                
+                # 子目录分析
+                try:
+                    subdirs = [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
+                    for subdir in subdirs[:5]:  # 只分析前5个子目录
+                        subdir_path = os.path.join(dir_path, subdir)
+                        subdir_files = os.listdir(subdir_path)
+                        for file in subdir_files[:5]:  # 每个子目录只分析前5个文件
+                            file_lower = file.lower()
+                            if any(pk in file_lower for pk in self.personal_keywords):
+                                personal_file_count += 0.3
+                            if any(sk in file_lower for sk in self.system_keywords):
+                                system_file_count += 0.3
+                            if any(swk in file_lower for swk in self.software_keywords):
+                                software_file_count += 0.3
+                except Exception:
+                    pass
+                
+                # 计算上下文得分
+                max_count = max(personal_file_count, system_file_count, software_file_count)
+                if max_count > 0:
+                    if personal_file_count == max_count:
+                        features["context_score"] = 1
+                    elif system_file_count == max_count:
+                        features["context_score"] = -1
+                    elif software_file_count == max_count:
+                        features["context_score"] = -2
         except Exception:
             pass
         
@@ -341,55 +572,57 @@ class IntelligentClassifier:
     def _calculate_confidence(self, features: Dict) -> float:
         """计算分类置信度"""
         score = 0
-        max_score = 20  # 增加最大分数以容纳新特征
+        max_score = 25  # 增加最大分数以容纳新特征
         
-        # 关键词分数
-        score += min(features["personal_keywords"] * 0.8, 3)
-        score += min(features["system_keywords"] * 0.8, 3)
-        score += min(features["software_keywords"] * 0.8, 3)
+        # 关键词分数 - 增加权重
+        score += min(features["personal_keywords"] * 1.0, 4)  # 增加个人关键词权重
+        score += min(features["system_keywords"] * 1.0, 4)  # 增加系统关键词权重
+        score += min(features["software_keywords"] * 1.0, 4)  # 增加软件关键词权重
         
-        # 目录特征
+        # 目录特征 - 增加权重
         if features["is_user_dir"]:
-            score += 2
+            score += 3  # 增加用户目录权重
         if features["is_system_dir"]:
-            score += 2
+            score += 3  # 增加系统目录权重
         if features["is_software_dir"]:
-            score += 2
+            score += 3  # 增加软件目录权重
         
-        # 文件特征
-        score += features["size_score"] * 0.5
-        score += features["time_score"] * 0.5
-        score += features["creation_score"] * 0.3
-        score += features["content_score"] * 0.8
+        # 文件特征 - 调整权重
+        score += features["size_score"] * 0.6  # 增加文件大小权重
+        score += features["time_score"] * 0.6  # 增加时间权重
+        score += features["creation_score"] * 0.4  # 增加创建时间权重
+        score += features["content_score"] * 1.0  # 增加内容分析权重
         
-        # 内容模式特征
+        # 内容模式特征 - 增加权重
         content_patterns = features.get("content_patterns", {})
         if content_patterns:
-            # 个人识别信息
-            personal_info_score = content_patterns.get("email_patterns", 0) * 0.5
-            personal_info_score += content_patterns.get("phone_patterns", 0) * 0.5
-            personal_info_score += content_patterns.get("id_patterns", 0) * 0.8
-            personal_info_score += content_patterns.get("address_patterns", 0) * 0.3
-            score += min(personal_info_score, 2)
+            # 个人识别信息 - 增加权重
+            personal_info_score = content_patterns.get("email_patterns", 0) * 0.6
+            personal_info_score += content_patterns.get("phone_patterns", 0) * 0.6
+            personal_info_score += content_patterns.get("id_patterns", 0) * 1.0  # 增加身份证等重要信息权重
+            personal_info_score += content_patterns.get("address_patterns", 0) * 0.4
+            score += min(personal_info_score, 3)  # 增加最大分数
             
             # 个人术语
-            score += content_patterns.get("personal_terms", 0) * 0.3
+            score += content_patterns.get("personal_terms", 0) * 0.4
             
             # 系统术语
-            score += content_patterns.get("system_terms", 0) * 0.3
+            score += content_patterns.get("system_terms", 0) * 0.4
             
             # 软件术语
-            score += content_patterns.get("software_terms", 0) * 0.3
+            score += content_patterns.get("software_terms", 0) * 0.4
         
-        # 上下文特征
+        # 上下文特征 - 增加权重
         if features["context_score"] > 0:
-            score += 1  # 同一目录下有较多个人文件
-        elif features["context_score"] < 0:
-            score -= 1  # 同一目录下有较多系统文件
+            score += 1.5  # 增加个人文件上下文权重
+        elif features["context_score"] == -1:
+            score -= 1.5  # 增加系统文件上下文权重
+        elif features["context_score"] == -2:
+            score -= 2.0  # 增加软件文件上下文权重
         
-        # 文件名和扩展名特征
-        score += features["filename_complexity"] * 0.5
-        score += features["extension_rarity"] * 0.3
+        # 文件名和扩展名特征 - 调整权重
+        score += features["filename_complexity"] * 0.6  # 增加文件名复杂度权重
+        score += features["extension_rarity"] * 0.4  # 增加扩展名稀有度权重
         
         # 学习模式
         score += self._apply_learned_patterns(features)
@@ -449,20 +682,22 @@ class IntelligentClassifier:
     def _determine_category(self, features: Dict, confidence: float) -> str:
         """确定文件类别"""
         # 基于特征确定类别
-        personal_score = features["personal_keywords"] + (2 if features["is_user_dir"] else 0)
-        personal_score += features["content_score"] * 1.5
-        personal_score += features["time_score"] * 0.5
-        personal_score += features["creation_score"] * 0.5
+        personal_score = features["personal_keywords"] + (3 if features["is_user_dir"] else 0)  # 增加用户目录权重
+        personal_score += features["content_score"] * 1.5  # 保持内容分析权重
+        personal_score += features["time_score"] * 0.6  # 增加时间权重
+        personal_score += features["creation_score"] * 0.4  # 调整创建时间权重
         if features["context_score"] > 0:
-            personal_score += 1
+            personal_score += 1.5  # 增加个人文件上下文权重
         
-        system_score = features["system_keywords"] + (2 if features["is_system_dir"] else 0)
-        system_score += features["filename_complexity"] * 0.5
-        if features["context_score"] < 0:
-            system_score += 1
+        system_score = features["system_keywords"] + (3 if features["is_system_dir"] else 0)  # 增加系统目录权重
+        system_score += features["filename_complexity"] * 0.6  # 增加文件名复杂度权重
+        if features["context_score"] == -1:
+            system_score += 1.5  # 增加系统文件上下文权重
         
-        software_score = features["software_keywords"] + (2 if features["is_software_dir"] else 0)
-        software_score += features["extension_rarity"] * 0.5
+        software_score = features["software_keywords"] + (3 if features["is_software_dir"] else 0)  # 增加软件目录权重
+        software_score += features["extension_rarity"] * 0.4  # 调整扩展名稀有度权重
+        if features["context_score"] == -2:
+            software_score += 2.0  # 增加软件文件上下文权重
         
         # 内容模式特征
         content_patterns = features.get("content_patterns", {})
@@ -555,7 +790,7 @@ class IntelligentClassifier:
                 reasons.append("在系统目录中")
             if features["filename_complexity"] > 0.5:
                 reasons.append("文件名复杂")
-            if features["context_score"] < 0:
+            if features["context_score"] == -1:
                 reasons.append("同一目录有其他系统文件")
             # 内容模式特征
             content_patterns = features.get("content_patterns", {})
@@ -568,6 +803,8 @@ class IntelligentClassifier:
                 reasons.append("在软件目录中")
             if features["extension_rarity"] > 0:
                 reasons.append("扩展名特殊")
+            if features["context_score"] == -2:
+                reasons.append("同一目录有其他软件文件")
             # 内容模式特征
             content_patterns = features.get("content_patterns", {})
             if content_patterns and content_patterns.get("software_terms", 0) > 0:
@@ -579,112 +816,113 @@ class IntelligentClassifier:
     
     def learn_from_feedback(self, file_path: str, is_personal: bool, confidence: float = 1.0):
         """从用户反馈中学习"""
-        file_hash = hashlib.md5(file_path.encode()).hexdigest()
-        
-        # 更新用户历史
-        history_key = "marked_personal" if is_personal else "marked_system"
-        if file_hash not in self.learning_data["user_history"][history_key]:
-            self.learning_data["user_history"][history_key].append(file_hash)
-        
-        # 提取特征进行学习
-        features = self._extract_features(file_path)
-        patterns = self.learning_data["patterns"]
-        
-        # 动态调整学习率
-        total_learning = self.learning_data.get("total_learning", 0)
-        base_learning_rate = 0.1
-        # 随着学习次数增加，逐渐减小学习率
-        learning_rate = base_learning_rate * (1 - min(total_learning / 1000, 0.8))
-        
-        # 学习扩展名权重
-        ext = features["extension"]
-        if ext:
-            if ext not in patterns["extension_weights"]:
-                patterns["extension_weights"][ext] = 0
-            if is_personal:
-                patterns["extension_weights"][ext] += learning_rate * confidence
-            else:
-                patterns["extension_weights"][ext] -= learning_rate * confidence
-            # 确保权重不为负
-            patterns["extension_weights"][ext] = max(0, patterns["extension_weights"][ext])
-        
-        # 学习目录模式
-        dir_path = features["dir_path"]
-        dir_pattern = os.path.basename(dir_path).lower()
-        if dir_pattern:
-            if dir_pattern not in patterns["dir_patterns"]:
-                patterns["dir_patterns"][dir_pattern] = 0
-            if is_personal:
-                patterns["dir_patterns"][dir_pattern] += learning_rate * confidence
-            else:
-                patterns["dir_patterns"][dir_pattern] -= learning_rate * confidence
-            patterns["dir_patterns"][dir_pattern] = max(0, patterns["dir_patterns"][dir_pattern])
-        
-        # 学习文件名模式
-        filename = features["filename"].lower()
-        if filename:
-            # 提取文件名模式（去除数字和特殊字符）
-            pattern = re.sub(r'\d+', '', filename)
-            pattern = re.sub(r'[._-]+', ' ', pattern).strip()
-            if pattern and len(pattern) > 3:
-                if pattern not in patterns["filename_patterns"]:
-                    patterns["filename_patterns"][pattern] = 0
-                if is_personal:
-                    patterns["filename_patterns"][pattern] += learning_rate * confidence
-                else:
-                    patterns["filename_patterns"][pattern] -= learning_rate * confidence
-                patterns["filename_patterns"][pattern] = max(0, patterns["filename_patterns"][pattern])
-        
-        # 学习内容特征
-        if features["content_score"] > 0:
-            content_patterns = patterns.get("content_patterns", {})
-            patterns["content_patterns"] = content_patterns
-            if is_personal:
-                content_patterns["personal_content"] = content_patterns.get("personal_content", 0) + learning_rate * confidence
-            else:
-                content_patterns["personal_content"] = max(0, content_patterns.get("personal_content", 0) - learning_rate * confidence)
-        
-        # 学习内容模式特征
-        content_patterns = features.get("content_patterns", {})
-        if content_patterns:
-            # 学习个人识别信息模式
-            if is_personal:
-                for key in ["email_patterns", "phone_patterns", "id_patterns", "address_patterns"]:
-                    if content_patterns.get(key, 0) > 0:
-                        personal_info_patterns = patterns.get("personal_info_patterns", {})
-                        patterns["personal_info_patterns"] = personal_info_patterns
-                        personal_info_patterns[key] = personal_info_patterns.get(key, 0) + learning_rate * confidence
+        with self._lock:
+            file_hash = hashlib.md5(file_path.encode()).hexdigest()
             
-            # 学习术语模式
-            term_patterns = patterns.get("term_patterns", {})
-            patterns["term_patterns"] = term_patterns
-            if is_personal:
-                if content_patterns.get("personal_terms", 0) > 0:
-                    term_patterns["personal_terms"] = term_patterns.get("personal_terms", 0) + learning_rate * confidence
-            else:
-                if content_patterns.get("system_terms", 0) > 0:
-                    term_patterns["system_terms"] = term_patterns.get("system_terms", 0) + learning_rate * confidence
-                if content_patterns.get("software_terms", 0) > 0:
-                    term_patterns["software_terms"] = term_patterns.get("software_terms", 0) + learning_rate * confidence
-        
-        # 学习上下文特征
-        if features["context_score"] != 0:
-            context_patterns = patterns.get("context_patterns", {})
-            patterns["context_patterns"] = context_patterns
-            if is_personal:
-                context_patterns["personal_context"] = context_patterns.get("personal_context", 0) + learning_rate * confidence
-            else:
-                context_patterns["personal_context"] = max(0, context_patterns.get("personal_context", 0) - learning_rate * confidence)
-        
-        # 更新学习计数
-        self.learning_data["total_learning"] += 1
-        
-        # 自适应调整置信度阈值
-        if total_learning % 10 == 0:  # 每10次学习调整一次
-            self._adjust_confidence_threshold()
-        
-        # 保存学习数据
-        self._save_learning_data()
+            # 更新用户历史
+            history_key = "marked_personal" if is_personal else "marked_system"
+            if file_hash not in self.learning_data["user_history"][history_key]:
+                self.learning_data["user_history"][history_key].append(file_hash)
+            
+            # 提取特征进行学习
+            features = self._extract_features(file_path)
+            patterns = self.learning_data["patterns"]
+            
+            # 动态调整学习率
+            total_learning = self.learning_data.get("total_learning", 0)
+            base_learning_rate = 0.15  # 增加初始学习率，让分类器更快适应
+            # 随着学习次数增加，逐渐减小学习率，但保持一定的学习能力
+            learning_rate = base_learning_rate * (1 - min(total_learning / 2000, 0.7))  # 减慢学习率衰减速度
+            
+            # 学习扩展名权重
+            ext = features["extension"]
+            if ext:
+                if ext not in patterns["extension_weights"]:
+                    patterns["extension_weights"][ext] = 0
+                if is_personal:
+                    patterns["extension_weights"][ext] += learning_rate * confidence
+                else:
+                    patterns["extension_weights"][ext] -= learning_rate * confidence
+                # 确保权重不为负
+                patterns["extension_weights"][ext] = max(0, patterns["extension_weights"][ext])
+            
+            # 学习目录模式
+            dir_path = features["dir_path"]
+            dir_pattern = os.path.basename(dir_path).lower()
+            if dir_pattern:
+                if dir_pattern not in patterns["dir_patterns"]:
+                    patterns["dir_patterns"][dir_pattern] = 0
+                if is_personal:
+                    patterns["dir_patterns"][dir_pattern] += learning_rate * confidence
+                else:
+                    patterns["dir_patterns"][dir_pattern] -= learning_rate * confidence
+                patterns["dir_patterns"][dir_pattern] = max(0, patterns["dir_patterns"][dir_pattern])
+            
+            # 学习文件名模式
+            filename = features["filename"].lower()
+            if filename:
+                # 提取文件名模式（去除数字和特殊字符）
+                pattern = re.sub(r'\d+', '', filename)
+                pattern = re.sub(r'[._-]+', ' ', pattern).strip()
+                if pattern and len(pattern) > 3:
+                    if pattern not in patterns["filename_patterns"]:
+                        patterns["filename_patterns"][pattern] = 0
+                    if is_personal:
+                        patterns["filename_patterns"][pattern] += learning_rate * confidence
+                    else:
+                        patterns["filename_patterns"][pattern] -= learning_rate * confidence
+                    patterns["filename_patterns"][pattern] = max(0, patterns["filename_patterns"][pattern])
+            
+            # 学习内容特征
+            if features["content_score"] > 0:
+                content_patterns = patterns.get("content_patterns", {})
+                patterns["content_patterns"] = content_patterns
+                if is_personal:
+                    content_patterns["personal_content"] = content_patterns.get("personal_content", 0) + learning_rate * confidence
+                else:
+                    content_patterns["personal_content"] = max(0, content_patterns.get("personal_content", 0) - learning_rate * confidence)
+            
+            # 学习内容模式特征
+            content_patterns = features.get("content_patterns", {})
+            if content_patterns:
+                # 学习个人识别信息模式
+                if is_personal:
+                    for key in ["email_patterns", "phone_patterns", "id_patterns", "address_patterns"]:
+                        if content_patterns.get(key, 0) > 0:
+                            personal_info_patterns = patterns.get("personal_info_patterns", {})
+                            patterns["personal_info_patterns"] = personal_info_patterns
+                            personal_info_patterns[key] = personal_info_patterns.get(key, 0) + learning_rate * confidence
+                
+                # 学习术语模式
+                term_patterns = patterns.get("term_patterns", {})
+                patterns["term_patterns"] = term_patterns
+                if is_personal:
+                    if content_patterns.get("personal_terms", 0) > 0:
+                        term_patterns["personal_terms"] = term_patterns.get("personal_terms", 0) + learning_rate * confidence
+                else:
+                    if content_patterns.get("system_terms", 0) > 0:
+                        term_patterns["system_terms"] = term_patterns.get("system_terms", 0) + learning_rate * confidence
+                    if content_patterns.get("software_terms", 0) > 0:
+                        term_patterns["software_terms"] = term_patterns.get("software_terms", 0) + learning_rate * confidence
+            
+            # 学习上下文特征
+            if features["context_score"] != 0:
+                context_patterns = patterns.get("context_patterns", {})
+                patterns["context_patterns"] = context_patterns
+                if is_personal:
+                    context_patterns["personal_context"] = context_patterns.get("personal_context", 0) + learning_rate * confidence
+                else:
+                    context_patterns["personal_context"] = max(0, context_patterns.get("personal_context", 0) - learning_rate * confidence)
+            
+            # 更新学习计数
+            self.learning_data["total_learning"] += 1
+            
+            # 自适应调整置信度阈值
+            if total_learning % 5 == 0:  # 每5次学习调整一次，增加调整频率
+                self._adjust_confidence_threshold()
+            
+            # 保存学习数据
+            self._save_learning_data()
     
     def learn_from_action(self, file_paths: List[str], action: str):
         """从用户操作中学习"""
@@ -693,15 +931,15 @@ class IntelligentClassifier:
             
             # 更新历史
             if action == "delete" and file_hash not in self.learning_data["user_history"]["deleted_files"]:
-                self.learning_data["user_history"]["deleted_files"].append(file_hash)
+                with self._lock:
+                    self.learning_data["user_history"]["deleted_files"].append(file_hash)
                 # 学习为非个人文件
                 self.learn_from_feedback(file_path, False, 0.8)
             elif action == "keep" and file_hash not in self.learning_data["user_history"]["kept_files"]:
-                self.learning_data["user_history"]["kept_files"].append(file_hash)
+                with self._lock:
+                    self.learning_data["user_history"]["kept_files"].append(file_hash)
                 # 学习为个人文件
                 self.learn_from_feedback(file_path, True, 0.8)
-        
-        self._save_learning_data()
     
     def get_learning_stats(self) -> Dict:
         """获取学习统计信息"""
@@ -733,32 +971,32 @@ class IntelligentClassifier:
             "number_patterns": 0
         }
         
-        # 邮箱模式
+        # 邮箱模式 - 只统计数量，不存储具体内容
         email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
         email_matches = re.findall(email_pattern, content)
         patterns["email_patterns"] = len(email_matches)
         
-        # 电话号码模式
+        # 电话号码模式 - 只统计数量，不存储具体内容
         phone_pattern = r'1[3-9]\d{9}'  # 中国手机号
         phone_matches = re.findall(phone_pattern, content)
         patterns["phone_patterns"] = len(phone_matches)
         
-        # 身份证号模式
+        # 身份证号模式 - 只统计数量，不存储具体内容
         id_pattern = r'[1-9]\d{5}(19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]'
         id_matches = re.findall(id_pattern, content)
         patterns["id_patterns"] = len(id_matches)
         
-        # 地址模式
+        # 地址模式 - 只统计数量，不存储具体内容
         address_pattern = r'[省市区县镇乡村]'
         address_matches = re.findall(address_pattern, content)
         patterns["address_patterns"] = len(address_matches)
         
-        # 日期模式
+        # 日期模式 - 只统计数量，不存储具体内容
         date_pattern = r'\d{4}[-/年]\d{1,2}[-/月]\d{1,2}[日]?'
         date_matches = re.findall(date_pattern, content)
         patterns["date_patterns"] = len(date_matches)
         
-        # 数字模式
+        # 数字模式 - 只统计数量，不存储具体内容
         number_pattern = r'\d{4,}'
         number_matches = re.findall(number_pattern, content)
         patterns["number_patterns"] = len(number_matches)

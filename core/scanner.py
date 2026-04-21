@@ -733,22 +733,30 @@ class Scanner:
         if self._stop_event.is_set():
             return
         
-        # 使用更简单的方式处理，避免复杂的取消逻辑
-        with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-            futures = []
-            for fp in file_paths:
-                if self._stop_event.is_set():
-                    break
-                futures.append(executor.submit(self._process_file_safe, fp))
+        # 限制批处理大小，避免内存使用过高
+        batch_size = 100
+        for i in range(0, len(file_paths), batch_size):
+            batch = file_paths[i:i+batch_size]
             
-            # 等待所有任务完成或停止信号
-            for future in futures:
-                if self._stop_event.is_set():
-                    break
-                try:
-                    future.result(timeout=0.1)
-                except Exception:
-                    pass
+            if self._stop_event.is_set():
+                break
+            
+            # 使用更简单的方式处理，避免复杂的取消逻辑
+            with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
+                futures = []
+                for fp in batch:
+                    if self._stop_event.is_set():
+                        break
+                    futures.append(executor.submit(self._process_file_safe, fp))
+                
+                # 等待所有任务完成或停止信号
+                for future in futures:
+                    if self._stop_event.is_set():
+                        break
+                    try:
+                        future.result(timeout=0.1)
+                    except Exception:
+                        pass
 
     def _process_file_safe(self, file_path: str):
         """安全处理单个文件（线程安全）"""

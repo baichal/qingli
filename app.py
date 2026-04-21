@@ -9,6 +9,23 @@ from flask import (
     Flask, render_template, request,
     jsonify, Response, stream_with_context, send_file
 )
+
+def _validate_path(path: str) -> bool:
+    """验证路径是否安全，防止目录遍历攻击"""
+    if not path:
+        return False
+    try:
+        # 规范化路径
+        normalized_path = os.path.normpath(path)
+        # 检查是否包含路径遍历字符
+        if '..' in normalized_path:
+            return False
+        # 检查路径是否存在
+        if not os.path.exists(normalized_path):
+            return False
+        return True
+    except Exception:
+        return False
 from core.scanner import scanner
 from core.file_ops import (
     delete_to_trash, delete_permanently,
@@ -256,8 +273,8 @@ def file_preview():
     if not path:
         return jsonify({"type": "error", "content": "路径不能为空"})
 
-    if not os.path.exists(path):
-        return jsonify({"type": "error", "content": f"文件不存在：{path}"})
+    if not _validate_path(path):
+        return jsonify({"type": "error", "content": "路径无效或不安全"})
 
     result = preview_file(path)
     return jsonify(result)
@@ -271,9 +288,9 @@ def file_delete_trash():
     if not paths:
         return jsonify({"success": False, "msg": "未提供文件路径"})
 
-    # ★ 过滤掉不存在的路径
-    valid_paths   = [p for p in paths if os.path.exists(p)]
-    invalid_paths = [p for p in paths if not os.path.exists(p)]
+    # ★ 过滤掉不存在或不安全的路径
+    valid_paths   = [p for p in paths if _validate_path(p)]
+    invalid_paths = [p for p in paths if not _validate_path(p)]
 
     result = delete_to_trash(valid_paths)
 
@@ -306,9 +323,9 @@ def file_delete_permanent():
     if not paths:
         return jsonify({"success": False, "msg": "未提供文件路径"})
 
-    # ★ 过滤掉不存在的路径
-    valid_paths   = [p for p in paths if os.path.exists(p)]
-    invalid_paths = [p for p in paths if not os.path.exists(p)]
+    # ★ 过滤掉不存在或不安全的路径
+    valid_paths   = [p for p in paths if _validate_path(p)]
+    invalid_paths = [p for p in paths if not _validate_path(p)]
 
     result = delete_permanently(valid_paths)
 
@@ -354,8 +371,8 @@ def serve_file():
     raw_path = request.args.get("path", "")
     path = _fix_windows_path(raw_path)
     
-    if not path or not os.path.exists(path):
-        return jsonify({"success": False, "msg": "文件不存在"}), 404
+    if not path or not _validate_path(path):
+        return jsonify({"success": False, "msg": "文件不存在或路径不安全"}), 404
     
     ext = os.path.splitext(path)[1].lower()
     
@@ -388,19 +405,18 @@ def open_dir():
     if not path:
         return jsonify({"success": False, "msg": "路径不能为空"})
 
+    if not _validate_path(path):
+        return jsonify({"success": False, "msg": "路径无效或不安全"})
+
     try:
         import subprocess
         import sys
 
         if is_dir:
             # 如果是目录，直接打开该目录
-            if not os.path.exists(path):
-                return jsonify({"success": False, "msg": f"目录不存在：{path}"})
             os.startfile(path)
         else:
             # 如果是文件，打开目录并选中文件
-            if not os.path.exists(path):
-                return jsonify({"success": False, "msg": f"文件不存在：{path}"})
             # 使用 explorer /select, 来打开目录并选中文件
             subprocess.Popen(['explorer', '/select,', path])
         return jsonify({"success": True})
@@ -537,6 +553,10 @@ def api_test_rule():
     if not test_path:
         return jsonify({"success": False, "msg": "请输入测试路径"})
 
+    # 验证规则 payload
+    if not isinstance(payload, dict):
+        return jsonify({"success": False, "msg": "规则格式无效"})
+
     # 路径不需要真实存在（content_keyword类型除外）
     result = test_rule(payload, test_path)
     return jsonify({"success": True, "result": result})
@@ -624,6 +644,9 @@ def api_smart_analyze():
     if not file_path:
         return jsonify({"success": False, "msg": "请提供文件路径"})
     
+    if not _validate_path(file_path):
+        return jsonify({"success": False, "msg": "路径无效或不安全"})
+    
     is_suspected, score, reason, confidence = is_suspected_personal(file_path)
     return jsonify({
         "success": True,
@@ -641,6 +664,9 @@ def api_smart_suggestion():
     
     if not file_path:
         return jsonify({"success": False, "msg": "请提供文件路径"})
+    
+    if not _validate_path(file_path):
+        return jsonify({"success": False, "msg": "路径无效或不安全"})
     
     suggestion = get_smart_suggestion(file_path)
     return jsonify({
@@ -748,6 +774,9 @@ def api_intelligent_classify():
     
     if not file_path:
         return jsonify({"success": False, "msg": "请提供文件路径"})
+    
+    if not _validate_path(file_path):
+        return jsonify({"success": False, "msg": "路径无效或不安全"})
     
     try:
         # 获取文件状态信息
