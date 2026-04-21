@@ -213,7 +213,7 @@ class IntelligentClassifier:
     
     def classify_file(self, file_path: str, stat_info: Optional[Dict] = None) -> Dict:
         """
-        智能文件分类
+        智能文件分类（深度分析）
         
         Returns:
             {
@@ -227,6 +227,30 @@ class IntelligentClassifier:
         confidence = self._calculate_confidence(features)
         category = self._determine_category(features, confidence)
         reason = self._generate_reason(features, category)
+        
+        return {
+            "category": category,
+            "confidence": confidence,
+            "reason": reason,
+            "features": features
+        }
+    
+    def classify_file_fast(self, file_path: str, stat_info: Optional[Dict] = None) -> Dict:
+        """
+        智能文件分类（快速分析）
+        
+        Returns:
+            {
+                "category": "personal" | "system" | "software" | "unknown",
+                "confidence": 0.0-1.0,
+                "reason": str,
+                "features": Dict
+            }
+        """
+        features = self._extract_features_fast(file_path, stat_info)
+        confidence = self._calculate_confidence_fast(features)
+        category = self._determine_category_fast(features, confidence)
+        reason = self._generate_reason_fast(features, category)
         
         return {
             "category": category,
@@ -814,6 +838,139 @@ class IntelligentClassifier:
             content_patterns = features.get("content_patterns", {})
             if content_patterns and content_patterns.get("software_terms", 0) > 0:
                 reasons.append("包含软件术语")
+        else:
+            reasons.append("无法确定类别")
+        
+        return ", ".join(reasons) if reasons else "未知原因"
+    
+    def _extract_features_fast(self, file_path: str, stat_info: Optional[Dict] = None) -> Dict:
+        """快速提取文件特征"""
+        features = {
+            "path": file_path,
+            "filename": os.path.basename(file_path),
+            "extension": Path(file_path).suffix.lower(),
+            "dir_path": os.path.dirname(file_path),
+            "personal_keywords": 0,
+            "system_keywords": 0,
+            "software_keywords": 0,
+            "is_user_dir": False,
+            "is_system_dir": False,
+            "is_software_dir": False
+        }
+        
+        # 提取关键词特征（简化版本）
+        path_lower = file_path.lower()
+        filename_lower = features["filename"].lower()
+        
+        # 简化的关键词匹配，只检查直接包含
+        for keyword in self.personal_keywords:
+            if len(keyword) >= 3 and keyword in path_lower:
+                features["personal_keywords"] += 1
+        for keyword in self.system_keywords:
+            if len(keyword) >= 3 and keyword in path_lower:
+                features["system_keywords"] += 1
+        for keyword in self.software_keywords:
+            if len(keyword) >= 3 and keyword in path_lower:
+                features["software_keywords"] += 1
+        
+        # 目录特征（简化版本）
+        user_profile = os.environ.get("USERPROFILE", "")
+        if user_profile and path_lower.startswith(user_profile.lower()):
+            features["is_user_dir"] = True
+        
+        # 系统目录检查（简化版本）
+        system_dirs = [
+            "windows", "program files", "program files (x86)", "programdata", 
+            "syswow64", "system32", "winnt", "system volume information",
+            "recycler", "$recycle.bin", "appdata", "local settings",
+            "common files", "microsoft", "windows.old", "windowsapps"
+        ]
+        for dir_name in system_dirs:
+            if dir_name in path_lower:
+                features["is_system_dir"] = True
+                features["system_keywords"] += 2
+                break
+        
+        # 软件目录检查（简化版本）
+        software_dirs = [
+            "appdata", "node_modules", "venv", "virtualenv", "env", ".venv",
+            ".git", "build", "dist", "target", "obj", "bin", "lib",
+            "cache", "temp", "tmp", "logs", "crash"
+        ]
+        for dir_name in software_dirs:
+            if dir_name in path_lower:
+                features["is_software_dir"] = True
+                features["software_keywords"] += 2
+                break
+        
+        # 特殊文件类型处理
+        software_extensions = [".exe", ".msi", ".dll", ".sys", ".zip", ".rar", ".7z"]
+        media_extensions = [".mp4", ".mp3", ".avi", ".mov", ".wmv", ".flv", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+        
+        if features["extension"] in software_extensions:
+            features["software_keywords"] += 2
+        elif features["extension"] in media_extensions and features["is_user_dir"]:
+            features["personal_keywords"] += 2
+        
+        return features
+    
+    def _calculate_confidence_fast(self, features: Dict) -> float:
+        """快速计算分类置信度"""
+        score = 0
+        max_score = 15  # 简化后的最大分数
+        
+        # 关键词分数
+        score += min(features["personal_keywords"] * 1.0, 3)
+        score += min(features["system_keywords"] * 1.0, 3)
+        score += min(features["software_keywords"] * 1.0, 3)
+        
+        # 目录特征
+        if features["is_user_dir"]:
+            score += 2
+        if features["is_system_dir"]:
+            score += 2
+        if features["is_software_dir"]:
+            score += 2
+        
+        return min(max(score / max_score, 0.1), 1.0)
+    
+    def _determine_category_fast(self, features: Dict, confidence: float) -> str:
+        """快速确定文件类别"""
+        # 基于特征确定类别
+        personal_score = features["personal_keywords"] + (2 if features["is_user_dir"] else 0)
+        system_score = features["system_keywords"] + (2 if features["is_system_dir"] else 0)
+        software_score = features["software_keywords"] + (2 if features["is_software_dir"] else 0)
+        
+        max_score = max(personal_score, system_score, software_score)
+        
+        if max_score == personal_score and max_score > 0:
+            return "personal"
+        elif max_score == system_score and max_score > 0:
+            return "system"
+        elif max_score == software_score and max_score > 0:
+            return "software"
+        else:
+            return "unknown"
+    
+    def _generate_reason_fast(self, features: Dict, category: str) -> str:
+        """快速生成分类理由"""
+        reasons = []
+        
+        if category == "personal":
+            if features["personal_keywords"] > 0:
+                reasons.append("包含个人关键词")
+            if features["is_user_dir"]:
+                reasons.append("在用户目录中")
+        elif category == "system":
+            if features["system_keywords"] > 0:
+                reasons.append("包含系统关键词")
+            if features["is_system_dir"]:
+                reasons.append("在系统目录中")
+        elif category == "software":
+            if features["software_keywords"] > 0:
+                reasons.append("包含软件关键词")
+            if features["is_software_dir"]:
+                reasons.append("在软件目录中")
         else:
             reasons.append("无法确定类别")
         

@@ -105,8 +105,9 @@ def scan_start():
     drives = data.get("drives", None)
     extra_exclude = data.get("extra_exclude", [])
     resume = data.get("resume", False)
+    fast_mode = data.get("fast_mode", False)
 
-    ok = scanner.start(drives=drives, extra_exclude=extra_exclude, resume=resume)
+    ok = scanner.start(drives=drives, extra_exclude=extra_exclude, resume=resume, fast_mode=fast_mode)
     return jsonify({"success": ok, "msg": "扫描已启动" if ok else "启动失败"})
 
 
@@ -768,7 +769,7 @@ def api_smart_patterns():
 
 @app.route("/api/intelligent/classify", methods=["POST"])
 def api_intelligent_classify():
-    """使用智能分类器分类文件"""
+    """使用智能分类器分类文件（深度分析）"""
     data = request.get_json() or {}
     file_path = data.get("path", "").strip()
     
@@ -789,6 +790,37 @@ def api_intelligent_classify():
             }
         
         result = intelligent_classifier.classify_file(file_path, stat_info)
+        return jsonify({
+            "success": True,
+            "result": result
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
+
+
+@app.route("/api/intelligent/classify/fast", methods=["POST"])
+def api_intelligent_classify_fast():
+    """使用智能分类器分类文件（快速分析）"""
+    data = request.get_json() or {}
+    file_path = data.get("path", "").strip()
+    
+    if not file_path:
+        return jsonify({"success": False, "msg": "请提供文件路径"})
+    
+    if not _validate_path(file_path):
+        return jsonify({"success": False, "msg": "路径无效或不安全"})
+    
+    try:
+        # 获取文件状态信息
+        stat_info = {}
+        if os.path.exists(file_path):
+            stat = os.stat(file_path)
+            stat_info = {
+                "size": stat.st_size,
+                "mtime_ts": int(stat.st_mtime)
+            }
+        
+        result = intelligent_classifier.classify_file_fast(file_path, stat_info)
         return jsonify({
             "success": True,
             "result": result
