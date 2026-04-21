@@ -706,6 +706,8 @@ def api_smart_mark_and_learn():
     
     if not dir_path:
         return jsonify({"success": False, "msg": "请提供目录路径"})
+    if not os.path.isdir(dir_path):
+        return jsonify({"success": False, "msg": "目录不存在或不是目录"})
     
     add_personal_dir(dir_path)
     learn_from_positive_example(dir_path, file_paths)
