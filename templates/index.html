@@ -2182,50 +2182,6 @@ function setUIScanning(isScanning) {
   }
 }
 
-async function refreshResults() {
-  try {
-    const res = await fetch('/api/scan/results', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        time_range: State.currentTimeRange,
-        time_start: document.getElementById('timeStart').value,
-        time_end: document.getElementById('timeEnd').value,
-        category: State.currentCategory,
-        personal_only: State.currentPersonalOnly,
-        suspected_only: State.currentSuspectedOnly,
-        page: State.currentPage,
-        page_size: State.pageSize
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      const oldPaths = new Set(State.allResults.map(f => f.path));
-      const newPaths = new Set(data.results.map(f => f.path));
-      const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
-      if (removedCount > 0) {
-        showRemovedFilesNotification(removedCount);
-      }
-      State.allResults = data.results;
-      State.totalCount = data.total;
-      if (State.totalCount === 0) {
-        document.getElementById('emptyState').style.display = 'flex';
-        document.getElementById('fileTable').style.display = 'none';
-        document.getElementById('paginationBar').style.display = 'none';
-      } else {
-        document.getElementById('emptyState').style.display = 'none';
-        document.getElementById('fileTable').style.display = 'table';
-        document.getElementById('paginationBar').style.display = 'flex';
-      }
-      renderTable(getFilteredResults());
-      updateSidebarCounts();
-      updateSelectionBar();
-    }
-  } catch (e) {
-    console.error('刷新结果失败', e);
-  }
-}
-
 function getFilteredResults() {
   let filtered = State.allResults;
   if (State.currentCategory !== 'all') {
@@ -2278,6 +2234,52 @@ function getFilteredResults() {
   }
   return filtered;
 }
+
+async function refreshResults() {
+  try {
+    const res = await fetch('/api/scan/results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        time_range: State.currentTimeRange,
+        time_start: document.getElementById('timeStart').value,
+        time_end: document.getElementById('timeEnd').value,
+        category: State.currentCategory,
+        personal_only: State.currentPersonalOnly,
+        suspected_only: State.currentSuspectedOnly,
+        page: State.currentPage,
+        page_size: State.pageSize
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      const oldPaths = new Set(State.allResults.map(f => f.path));
+      const newPaths = new Set(data.results.map(f => f.path));
+      const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
+      if (removedCount > 0) {
+        showRemovedFilesNotification(removedCount);
+      }
+      State.allResults = data.results;
+      State.totalCount = data.total;
+      if (State.totalCount === 0) {
+        document.getElementById('emptyState').style.display = 'flex';
+        document.getElementById('fileTable').style.display = 'none';
+        document.getElementById('paginationBar').style.display = 'none';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('fileTable').style.display = 'table';
+        document.getElementById('paginationBar').style.display = 'flex';
+      }
+      renderTable(getFilteredResults());
+      updateSidebarCounts();
+      updateSelectionBar();
+    }
+  } catch (e) {
+    console.error('刷新结果失败', e);
+  }
+}
+
+
 
 function renderTable(results) {
   const tbody = document.getElementById('fileTableBody');
@@ -2602,58 +2604,7 @@ async function previewFile(id) {
   }
 }
 
-function getFilteredResults() {
-  let filtered = State.allResults;
-  if (State.currentCategory !== 'all') {
-    filtered = filtered.filter(f => f.category === State.currentCategory);
-  }
-  if (State.currentRisk) {
-    filtered = filtered.filter(f => f.risk === State.currentRisk);
-  }
-  if (State.currentKeyword) {
-    const keyword = State.currentKeyword.toLowerCase();
-    filtered = filtered.filter(f => 
-      f.name.toLowerCase().includes(keyword) || 
-      f.path.toLowerCase().includes(keyword)
-    );
-  }
-  if (State.currentTimeRange === '1month') {
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    filtered = filtered.filter(f => new Date(f.modified_time) >= monthAgo);
-  } else if (State.currentTimeRange === '3months') {
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    filtered = filtered.filter(f => new Date(f.modified_time) >= threeMonthsAgo);
-  } else if (State.currentTimeRange === '1year') {
-    const yearAgo = new Date();
-    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-    filtered = filtered.filter(f => new Date(f.modified_time) >= yearAgo);
-  } else if (State.currentTimeRange === 'older1year') {
-    const yearAgo = new Date();
-    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
-    filtered = filtered.filter(f => new Date(f.modified_time) < yearAgo);
-  } else if (State.currentTimeRange === 'custom') {
-    const start = document.getElementById('timeStart').value;
-    const end = document.getElementById('timeEnd').value;
-    if (start) {
-      const startDate = new Date(start);
-      filtered = filtered.filter(f => new Date(f.modified_time) >= startDate);
-    }
-    if (end) {
-      const endDate = new Date(end);
-      endDate.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(f => new Date(f.modified_time) <= endDate);
-    }
-  }
-  if (State.currentPersonalOnly) {
-    filtered = filtered.filter(f => f.is_personal_dir === true);
-  }
-  if (State.currentSuspectedOnly) {
-    filtered = filtered.filter(f => f.is_personal === true && f.is_personal_dir !== true);
-  }
-  return filtered;
-}
+
 
 function togglePreview() {
   const panel = document.getElementById('previewPanel');
