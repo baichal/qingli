@@ -19,6 +19,11 @@ class IntelligentClassifier:
         self.learning_data = self._load_learning_data()
         self._setup_patterns()
         self._lock = threading.RLock()  # 可重入锁，用于线程安全
+        # 启动时从系统日志中学习用户操作习惯
+        try:
+            self.learn_from_system_logs()
+        except Exception as e:
+            print(f"启动时学习系统日志失败: {e}")
     
     def _load_learning_data(self, recursion_count: int = 0) -> Dict:
         """加载学习数据"""
@@ -1065,6 +1070,119 @@ class IntelligentClassifier:
             "total_learning": 0
         }
         self._save_learning_data()
+    
+    def learn_from_system_logs(self):
+        """从系统操作日志中学习用户操作习惯"""
+        try:
+            # 读取Windows事件日志
+            import win32evtlog
+            import win32evtlogutil
+            import win32con
+            
+            # 打开系统事件日志
+            server = "localhost"
+            logtype = "Security"
+            hand = win32evtlog.OpenEventLog(server, logtype)
+            
+            # 读取最近的事件
+            flags = win32evtlog.EVENTLOG_BACKWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ
+            events = win32evtlog.ReadEventLog(hand, flags, 0)
+            
+            # 分析事件
+            file_operations = []
+            for event in events[:100]:  # 只处理最近的100个事件
+                try:
+                    event_id = event.EventID & 0xFFFF
+                    # 查找文件操作相关的事件
+                    if event_id in [4663, 4656, 4658]:  # 文件操作事件ID
+                        data = event.StringInserts
+                        if data:
+                            # 提取文件路径
+                            for item in data:
+                                if os.path.exists(item):
+                                    # 假设删除操作是系统/软件文件
+                                    # 假设创建/修改操作可能是个人文件
+                                    if event_id == 4663:  # 文件删除
+                                        file_operations.append((item, "delete"))
+                                    else:  # 文件创建/修改
+                                        file_operations.append((item, "create"))
+                except Exception:
+                    pass
+            
+            win32evtlog.CloseEventLog(hand)
+            
+            # 从文件操作中学习
+            for file_path, operation in file_operations:
+                if operation == "delete":
+                    # 学习为非个人文件
+                    self.learn_from_feedback(file_path, False, 0.9)
+                elif operation == "create":
+                    # 学习为个人文件
+                    self.learn_from_feedback(file_path, True, 0.8)
+            
+            # 读取最近的文件操作历史
+            # 从最近访问的文件中学习
+            recent_files = []
+            try:
+                # 读取最近使用的文件
+                import winreg
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs")
+                for i in range(100):
+                    try:
+                        value = winreg.EnumValue(key, i)
+                        if value[1]:
+                            # 提取文件路径
+                            path = value[1]
+                            if os.path.exists(path):
+                                recent_files.append(path)
+                    except WindowsError:
+                        break
+                winreg.CloseKey(key)
+            except Exception:
+                pass
+            
+            # 从最近文件中学习
+            for file_path in recent_files[:20]:  # 只处理最近的20个文件
+                # 假设最近访问的文件可能是个人文件
+                self.learn_from_feedback(file_path, True, 0.7)
+            
+            return f"从系统日志中学习了 {len(file_operations) + len(recent_files)} 个文件操作"
+        except ImportError:
+            # 如果没有win32evtlog模块，尝试其他方法
+            try:
+                # 读取最近的文件操作历史
+                import os
+                import glob
+                
+                # 读取最近访问的文件
+                recent_files = []
+                # 尝试读取Windows最近文件
+                recent_dir = os.path.join(os.environ.get("USERPROFILE", ""), "AppData", "Roaming", "Microsoft", "Windows", "Recent")
+                if os.path.exists(recent_dir):
+                    lnk_files = glob.glob(os.path.join(recent_dir, "*.lnk"))
+                    for lnk_file in lnk_files[:20]:  # 只处理最近的20个快捷方式
+                        try:
+                            # 尝试解析快捷方式
+                            import winshell
+                            shortcut = winshell.shortcut(lnk_file)
+                            target = shortcut.path
+                            if os.path.exists(target):
+                                recent_files.append(target)
+                        except Exception:
+                            pass
+                
+                # 从最近文件中学习
+                for file_path in recent_files:
+                    # 假设最近访问的文件可能是个人文件
+                    self.learn_from_feedback(file_path, True, 0.7)
+                
+                return f"从最近文件中学习了 {len(recent_files)} 个文件"
+            except Exception:
+                # 如果所有方法都失败，返回空
+                return "无法读取系统日志"
+        except Exception as e:
+            print(f"读取系统日志失败: {e}")
+            return "读取系统日志失败"
 
 # 单例实例
 intelligent_classifier = IntelligentClassifier()

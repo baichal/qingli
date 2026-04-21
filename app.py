@@ -844,6 +844,19 @@ def api_intelligent_reset():
         return jsonify({"success": False, "msg": str(e)})
 
 
+@app.route("/api/intelligent/learn_from_logs", methods=["POST"])
+def api_learn_from_logs():
+    """从系统操作日志中学习用户操作习惯"""
+    try:
+        result = intelligent_classifier.learn_from_system_logs()
+        return jsonify({
+            "success": True,
+            "msg": result
+        })
+    except Exception as e:
+        return jsonify({"success": False, "msg": str(e)})
+
+
 # ─────────────────────────────────────────
 # 筛选结果 API
 # ─────────────────────────────────────────
