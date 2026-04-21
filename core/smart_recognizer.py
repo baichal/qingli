@@ -116,7 +116,8 @@ def _load_learned_patterns() -> Dict:
             if "extension_weights" not in data:
                 data["extension_weights"] = {}
             return data
-    except Exception:
+    except Exception as e:
+        print(f"加载学习模式失败: {e}")
         return {
             "path_keywords": [],
             "dir_patterns": [],
