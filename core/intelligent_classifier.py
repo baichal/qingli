@@ -320,7 +320,7 @@ class IntelligentClassifier:
             "syswow64", "system32", "winnt", "system volume information",
             "recycler", "$recycle.bin", "appdata", "local settings",
             "common files", "microsoft", "windows.old", "windowsapps",
-            "windows\system32", "windows\syswow64", "windows\system", "windows\inf"
+            "windows/system32", "windows/syswow64", "windows/system", "windows/inf"
         ]
         for dir_name in system_dirs:
             if f"{os.sep}{dir_name}{os.sep}" in path_lower or dir_name in path_lower:
@@ -330,7 +330,7 @@ class IntelligentClassifier:
         
         # 软件目录检查
         software_dirs = [
-            "appdata\local", "appdata\roaming", "appdata\locallow",
+            "appdata/local", "appdata/roaming", "appdata/locallow",
             "node_modules", "venv", "virtualenv", "env", ".venv",
             ".git", "build", "dist", "target", "obj", "bin", "lib",
             "cache", "temp", "tmp", "logs", "crash", "debug", "release",
@@ -398,11 +398,11 @@ class IntelligentClassifier:
         if features["extension"] in content_viewable_extensions:
             try:
                 size = os.path.getsize(file_path)
-                # 限制文件大小，避免内存使用过高
-                if size < 512 * 1024:  # 小于512KB
+                # 增加文件大小限制，允许读取更大的文件以提高学习精度
+                if size < 2 * 1024 * 1024:  # 小于2MB
                     with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                        # 限制读取内容长度
-                        content = f.read(100000).lower()  # 最多读取100KB
+                        # 增加内容读取长度，允许读取更多内容以提高学习精度
+                        content = f.read(500000).lower()  # 最多读取500KB
                         # 检查个人内容关键词
                         personal_content_keywords = [
                             "我", "我的", "个人", "私人", "简历", "照片", "家庭", "联系方式", "电话", "邮箱", "地址", "身份证", "护照", "银行卡", "工资", "合同", "offer", "推荐信",
@@ -521,7 +521,7 @@ class IntelligentClassifier:
                 system_file_count = 0
                 software_file_count = 0
                 
-                for file in files_in_dir[:20]:  # 只分析前20个文件
+                for file in files_in_dir:  # 分析所有文件
                     file_lower = file.lower()
                     if any(pk in file_lower for pk in self.personal_keywords):
                         personal_file_count += 1
@@ -534,7 +534,7 @@ class IntelligentClassifier:
                 parent_dir = os.path.dirname(dir_path)
                 if os.path.exists(parent_dir) and parent_dir != dir_path:
                     parent_files = os.listdir(parent_dir)
-                    for file in parent_files[:10]:  # 只分析前10个文件
+                    for file in parent_files:  # 分析所有文件
                         file_lower = file.lower()
                         if any(pk in file_lower for pk in self.personal_keywords):
                             personal_file_count += 0.5
@@ -546,10 +546,10 @@ class IntelligentClassifier:
                 # 子目录分析
                 try:
                     subdirs = [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
-                    for subdir in subdirs[:5]:  # 只分析前5个子目录
+                    for subdir in subdirs:  # 分析所有子目录
                         subdir_path = os.path.join(dir_path, subdir)
                         subdir_files = os.listdir(subdir_path)
-                        for file in subdir_files[:5]:  # 每个子目录只分析前5个文件
+                        for file in subdir_files:  # 分析每个子目录的所有文件
                             file_lower = file.lower()
                             if any(pk in file_lower for pk in self.personal_keywords):
                                 personal_file_count += 0.3
@@ -1090,7 +1090,7 @@ class IntelligentClassifier:
             
             # 分析事件
             file_operations = []
-            for event in events[:100]:  # 只处理最近的100个事件
+            for event in events:  # 处理所有事件
                 try:
                     event_id = event.EventID & 0xFFFF
                     # 查找文件操作相关的事件
@@ -1142,7 +1142,7 @@ class IntelligentClassifier:
                 pass
             
             # 从最近文件中学习
-            for file_path in recent_files[:20]:  # 只处理最近的20个文件
+            for file_path in recent_files:  # 处理所有最近文件
                 # 假设最近访问的文件可能是个人文件
                 self.learn_from_feedback(file_path, True, 0.7)
             
@@ -1160,7 +1160,7 @@ class IntelligentClassifier:
                 recent_dir = os.path.join(os.environ.get("USERPROFILE", ""), "AppData", "Roaming", "Microsoft", "Windows", "Recent")
                 if os.path.exists(recent_dir):
                     lnk_files = glob.glob(os.path.join(recent_dir, "*.lnk"))
-                    for lnk_file in lnk_files[:20]:  # 只处理最近的20个快捷方式
+                    for lnk_file in lnk_files:  # 处理所有快捷方式
                         try:
                             # 尝试解析快捷方式
                             import winshell
