@@ -3,1153 +3,1855 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>文件清理工具</title>
+<title>文件清理工具 - FileClean Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <style>
-  /* ── Reset & 基础 ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f1117;
-    --bg2: #1a1d27;
-    --bg3: #22263a;
-    --border: #2e3347;
-    --text: #e2e8f0;
-    --text2: #8892a4;
-    --accent: #4f8ef7;
-    --red: #ff4d4f;
-    --yellow: #faad14;
-    --green: #52c41a;
-    --radius: 8px;
-    --sidebar-w: 220px;
-    --preview-h: 280px;
-  }
-  body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    font-size: 14px;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  /* ── 顶部导航 ── */
-  .topbar {
-    height: 52px;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 16px;
-    flex-shrink: 0;
-    z-index: 100;
-  }
-  .topbar .logo {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-  .topbar .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    font-size: 12px;
-    color: var(--text2);
-  }
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--text2);
-    flex-shrink: 0;
-  }
-  .status-dot.running { background: var(--green); animation: pulse 1s infinite; }
-  .status-dot.done { background: var(--accent); }
-  .status-dot.error { background: var(--red); }
-  @keyframes pulse {
-    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
-  }
-  .topbar .actions { display: flex; gap: 8px; margin-left: auto; }
-  
-  /* ── 文件变化提示 ── */
-  .file-change-notification {
-    position: fixed;
-    top: 60px;
-    right: 20px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 1000;
-    animation: slideIn 0.3s ease;
-  }
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  .file-change-notification .icon { font-size: 20px; }
-  .file-change-notification .text { flex: 1; }
-  .file-change-notification .title { font-weight: 600; margin-bottom: 2px; }
-  .file-change-notification .desc { font-size: 12px; color: var(--text2); }
-  .file-change-notification .btn {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .file-change-notification .btn:hover { opacity: 0.9; }
-  .file-change-notification .close {
-    background: none;
-    border: none;
-    color: var(--text2);
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0;
-    line-height: 1;
-  }
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #3b82f6;
+  --accent-blue-light: #dbeafe;
+  --accent-green: #059669;
+  --accent-green-light: #d1fae5;
+  --accent-yellow: #d97706;
+  --accent-yellow-light: #fef3c7;
+  --accent-red: #dc2626;
+  --accent-red-light: #fee2e2;
+  --accent-purple: #7c3aed;
+  --accent-purple-light: #ede9fe;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
 
-  /* ── 主体布局 ── */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.6;
+}
 
-  /* ── 侧边栏 ── */
-  .sidebar {
-    width: var(--sidebar-w);
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .sidebar-title {
-    padding: 14px 16px 8px;
-    font-size: 11px;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-  }
-  .sidebar-list { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
-  .sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: background 0.15s;
-    user-select: none;
-  }
-  .sidebar-item:hover { background: var(--bg3); }
-  .sidebar-item.active { background: rgba(79,142,247,0.15); }
-  .sidebar-item .icon { font-size: 16px; flex-shrink: 0; }
-  .sidebar-item .label { flex: 1; font-size: 13px; }
-  .sidebar-item .badge {
-    background: var(--bg3);
-    color: var(--text2);
-    font-size: 11px;
-    padding: 1px 7px;
-    border-radius: 20px;
-    min-width: 24px;
-    text-align: center;
-  }
-  .sidebar-item.active .badge { background: var(--accent); color: #fff; }
-  .risk-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+/* ===== App Container ===== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 16px;
+  gap: 16px;
+}
 
-  /* ── 内容区 ── */
-  .content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+/* ===== Main Card ===== */
+.main-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
 
-  /* ── 工具栏 ── */
-  .toolbar {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-    background: var(--bg2);
-    flex-wrap: wrap;
-  }
-  .search-box {
-    display: flex;
-    align-items: center;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 7px 14px;
-    gap: 8px;
-    flex: 1;
-    min-width: 180px;
-    transition: border-color 0.15s;
-  }
-  .search-box:focus-within { border-color: var(--accent); }
-  .search-box input {
-    background: none;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 13px;
-    flex: 1;
-    min-width: 0;
-  }
-  .search-box input::placeholder { color: var(--text2); }
-  select {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    padding: 7px 12px;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  select:hover { border-color: #3e4460; }
-  select:focus { border-color: var(--accent); }
-  input[type="date"] {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    padding: 7px 12px;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  input[type="date"]:hover { border-color: #3e4460; }
-  input[type="date"]:focus { border-color: var(--accent); }
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.7);
-    cursor: pointer;
-  }
-  .custom-date-inputs {
-    display: none;
-    gap: 8px;
-    align-items: center;
-  }
-  .date-separator {
-    color: var(--text2);
-  }
-  .toolbar-right { display: flex; gap: 8px; margin-left: auto; }
-
-  /* ── 选中操作栏 ── */
-  .selection-bar {
-    padding: 10px 16px;
-    background: rgba(79,142,247,0.08);
-    border-bottom: 1px solid rgba(79,142,247,0.2);
-    display: none;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .selection-bar.show { display: flex; }
-  .sel-count { color: var(--accent); font-weight: 600; font-size: 13px; }
-
-  /* ── 文件列表 ── */
-  .file-list-wrap {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0;
-  }
-  .file-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .file-table th {
-    position: sticky;
-    top: 0;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text2);
-    user-select: none;
-    white-space: nowrap;
-    z-index: 10;
-  }
-  .file-table th input[type=checkbox] { cursor: pointer; }
-  .file-table td {
-    padding: 9px 12px;
-    border-bottom: 1px solid rgba(46,51,71,0.6);
-    font-size: 13px;
-    vertical-align: middle;
-  }
-  .file-table tr:hover td { background: var(--bg3); cursor: pointer; }
-  .file-table tr.selected td { background: rgba(79,142,247,0.08); }
-  .file-table tr.preview-active td { background: rgba(79,142,247,0.15); }
-
-  .risk-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .risk-high { background: rgba(255,77,79,0.15); color: var(--red); }
-  .risk-medium { background: rgba(250,173,20,0.15); color: var(--yellow); }
-  .risk-low { background: rgba(82,196,26,0.15); color: var(--green); }
-
-  .file-name { max-width: 280px; }
-  .file-name .name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .file-name .path { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
-  .cat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--bg3);
-    border-radius: 4px;
-    padding: 2px 7px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  /* ── 预览面板 ── */
-  .preview-panel {
-    height: var(--preview-h);
-    border-top: 1px solid var(--border);
-    background: var(--bg2);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    transition: height 0.2s;
-  }
-  .preview-panel.collapsed { height: 40px; }
-  .preview-header {
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    height: 40px;
-    border-bottom: 1px solid var(--border);
-    gap: 12px;
-    flex-shrink: 0;
-    cursor: pointer;
-    user-select: none;
-  }
-  .preview-header:hover { background: var(--bg3); }
-  .preview-title { font-size: 12px; font-weight: 600; color: var(--text2); flex: 1; }
-  .preview-meta { font-size: 11px; color: var(--text2); display: flex; gap: 16px; }
-  .preview-meta span b { color: var(--text); }
-  .preview-body {
-    flex: 1;
-    overflow: auto;
-    padding: 16px;
-  }
-  .preview-body pre {
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 12px;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-all;
-    line-height: 1.6;
-  }
-  .preview-body img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    display: block;
-    margin: auto;
-  }
-  .preview-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text2);
-    font-size: 13px;
-    gap: 8px;
-  }
-
-  /* ── 配置弹窗 ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-  }
-  .modal {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    width: 560px;
-    max-height: 80vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  }
-  .modal-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .modal-header h2 { font-size: 15px; font-weight: 700; }
-  .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-  .modal-footer {
-    padding: 14px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-
-  /* ── 按钮 ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: var(--radius);
-    border: none;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: opacity 0.15s, transform 0.1s, background 0.15s;
-    white-space: nowrap;
-  }
-  .btn:hover { opacity: 0.9; }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: #3d7de6; opacity: 1; }
-  .btn-danger { background: var(--red); color: #fff; }
-  .btn-danger:hover { background: #e63946; opacity: 1; }
-  .btn-warn { background: var(--yellow); color: #000; }
-  .btn-warn:hover { background: #e69a0c; opacity: 1; }
-  .btn-success { background: var(--green); color: #fff; }
-  .btn-success:hover { background: #389e0d; opacity: 1; }
-  .btn-ghost {
-    background: var(--bg3);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: #2a2f46; opacity: 1; }
-  .btn-sm { padding: 5px 12px; font-size: 12px; }
-
-  /* ── 表单控件 ── */
-  .form-group { margin-bottom: 16px; }
-  .form-group label {
-    display: block;
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .drive-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .drive-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: all 0.15s;
-    min-width: 100px;
-    text-align: center;
-  }
-  .drive-card:hover { border-color: var(--accent); }
-  .drive-card.selected { border-color: var(--accent); background: rgba(79,142,247,0.1); }
-  .drive-card .drive-letter { font-size: 20px; font-weight: 700; color: var(--accent); }
-  .drive-card .drive-info { font-size: 11px; color: var(--text2); margin-top: 4px; }
-  textarea {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    padding: 10px 12px;
-    font-size: 12px;
-    font-family: monospace;
-    resize: vertical;
-    min-height: 80px;
-    outline: none;
-  }
-  textarea:focus { border-color: var(--accent); }
-
-  /* ── 确认弹窗 ── */
-  .confirm-modal {
-    width: 400px;
-    padding: 24px;
-  }
-  .confirm-modal .confirm-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
-  .confirm-modal h3 { text-align: center; font-size: 16px; margin-bottom: 8px; }
-  .confirm-modal p { text-align: center; color: var(--text2); font-size: 13px; margin-bottom: 20px; }
-  .confirm-modal .file-list-preview {
-    background: var(--bg3);
-    border-radius: var(--radius);
-    padding: 10px;
-    max-height: 120px;
-    overflow-y: auto;
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 20px;
-  }
-
-  /* ── Toast ── */
-  .toast-container {
-    position: fixed;
-    top: 60px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .toast {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 10px 16px;
-    font-size: 13px;
-    min-width: 260px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    animation: slideIn 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .toast.success { border-left: 3px solid var(--green); }
-  .toast.error { border-left: 3px solid var(--red); }
-  .toast.info { border-left: 3px solid var(--accent); }
-  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-  /* ── 滚动条 ── */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #3a3f56; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #4a506a; }
-
-  /* ── 空状态 ── */
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--text2);
-    gap: 14px;
-    padding: 40px;
-  }
-  .empty-state .empty-icon { font-size: 56px; opacity: 0.35; }
-  .empty-state p { font-size: 14px; text-align: center; line-height: 1.6; }
-
-  /* ── 进度条 ── */
-  .progress-bar-wrap {
-    flex: 1;
-    height: 4px;
-    background: var(--bg3);
-    border-radius: 2px;
-    overflow: hidden;
-    min-width: 120px;
-  }
-  .progress-bar {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.3s;
-    animation: shimmer 1.5s infinite;
-  }
-  @keyframes shimmer {
-    0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; }
-  }
-
-  .inline-flex { display: inline-flex; align-items: center; gap: 6px; }
-
-  /* ── 规则列表卡片 ── */
-.rule-card {
+/* ===== Header ===== */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px 28px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 6px;
-  transition: border-color 0.15s;
+  gap: 24px;
+  position: relative;
 }
-.rule-card:hover { border-color: var(--accent); }
-.rule-card.disabled { opacity: 0.5; }
-.rule-card .rule-icon { font-size: 20px; flex-shrink: 0; }
-.rule-card .rule-info { flex: 1; min-width: 0; }
-.rule-card .rule-name {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.3;
 }
-.rule-card .rule-meta {
-  font-size: 11px;
-  color: var(--text2);
-  margin-top: 2px;
+
+.logo-section {
   display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.logo-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.status-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 10px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all var(--transition-normal);
+}
+
+.status-dot.scanning {
+  background: #4ade80;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.6);
+}
+
+.status-dot.complete {
+  background: #60a5fa;
+  box-shadow: 0 0 16px rgba(96, 165, 250, 0.6);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.4); }
+}
+
+.status-text {
+  font-weight: 500;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.progress-container {
+  flex: 1;
+  max-width: 420px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80 0%, #60a5fa 50%, #a78bfa 100%);
+  border-radius: 9999px;
+  transition: width var(--transition-normal);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-stats {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.actions-section {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  color: var(--accent-blue);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-lg {
+  padding: 14px 24px;
+  font-size: 15px;
+}
+
+/* ===== Main Content ===== */
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 260px;
+  background: var(--bg-tertiary);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+}
+
+.sidebar-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.sidebar-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 16px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  margin-bottom: 6px;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+  transform: translateX(4px);
+}
+
+.sidebar-item.active {
+  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.sidebar-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar-item.active .sidebar-icon {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  color: white;
+}
+
+.sidebar-label {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sidebar-badge {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  min-width: 34px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+
+.sidebar-item.active .sidebar-badge {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+/* ===== Content Area ===== */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  padding: 20px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 260px;
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-tertiary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  transition: all var(--transition-normal);
+}
+
+.search-box:focus-within {
+  border-color: var(--accent-blue);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 4px var(--accent-blue-light);
+}
+
+.search-box span {
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+.search-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-/* ── 条件行 ── */
-.condition-row {
+.filter-select {
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 11px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    font-family: inherit;
+    font-weight: 500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+    transition: all var(--transition-normal);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .filter-select:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .filter-select:focus {
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 0 4px var(--accent-blue-light);
+  }
+
+  .filter-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    margin: 4px 8px;
+  }
+
+  .filter-select option:hover {
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    color: var(--accent-blue);
+    transform: translateX(4px);
+  }
+
+  .filter-select option:checked {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    color: white;
+    font-weight: 600;
+  }
+
+.filter-checkbox {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: all var(--transition-normal);
+  font-weight: 500;
 }
-.condition-row select { flex-shrink: 0; width: 130px; }
-.condition-row input[type=text] {
+
+.filter-checkbox:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-blue);
+    appearance: none;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-normal);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .filter-checkbox input[type="checkbox"]:hover {
+    border-color: var(--accent-blue);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  }
+
+  .filter-checkbox input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .filter-checkbox input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+.toolbar-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* ===== Selection Bar ===== */
+.selection-bar {
+  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.2);
+  padding: 14px 24px;
+  display: none;
+  align-items: center;
+  gap: 18px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selection-bar.show {
+  display: flex;
+}
+
+.selection-count {
+  color: var(--accent-blue);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selection-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ===== File List ===== */
+.file-list-container {
   flex: 1;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  padding: 5px 10px;
-  font-size: 12px;
-  font-family: monospace;
-  outline: none;
-  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
 }
-.condition-row input[type=text]:focus { border-color: var(--accent); }
-.condition-row input[type=text].regex-input { color: #7ec8e3; }
 
-/* ── 测试结果条件行 ── */
-.test-cond-row {
+.file-list-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 24px;
+  padding: 60px 40px;
+}
+
+.empty-icon {
+  font-size: 72px;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.empty-text {
+  text-align: center;
+  line-height: 2;
+  font-size: 15px;
+}
+
+.empty-text strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.file-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.file-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.file-table th {
+  background: var(--bg-tertiary);
+  padding: 16px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.file-table th:first-child {
+  border-radius: var(--radius-md) 0 0 0;
+}
+
+.file-table th:last-child {
+  border-radius: 0 var(--radius-md) 0 0;
+}
+
+.file-table td {
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  vertical-align: middle;
+  transition: all var(--transition-normal);
+}
+
+.file-table tbody tr {
+  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
+  border-left: 3px solid transparent;
+}
+
+.file-table tbody tr:hover {
+  background: var(--bg-tertiary);
+  transform: scale(1.005);
+  border-left-color: var(--accent-blue);
+}
+
+.file-table tbody tr.selected {
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    border-left: 4px solid var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transform: scale(1.01);
+    z-index: 1;
+    position: relative;
+  }
+
+  .file-table tbody tr.selected:hover {
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    border-left-color: var(--accent-purple);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  }
+
+.file-table tbody tr.preview-active {
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  border-left-color: var(--accent-blue);
+}
+
+.file-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.file-path {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.badge-risk-high {
+  background: var(--accent-red-light);
+  color: var(--accent-red);
+}
+
+.badge-risk-medium {
+  background: var(--accent-yellow-light);
+  color: var(--accent-yellow);
+}
+
+.badge-risk-low {
+  background: var(--accent-green-light);
+  color: var(--accent-green);
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  padding: 18px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.pagination.show {
+  display: flex;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* ===== Preview Panel ===== */
+.preview-panel {
+  border-top: 1px solid var(--border);
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-normal);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  max-height: 420px;
+}
+
+.preview-panel.collapsed {
+  max-height: 56px;
+}
+
+.preview-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
-  border-radius: 4px;
-  background: var(--bg3);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  gap: 20px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
 }
-.test-cond-row .hit-icon { font-size: 14px; flex-shrink: 0; }
-.test-cond-row .cond-desc { flex: 1; color: var(--text2); }
-.test-cond-row .cond-val { font-family: monospace; color: var(--text); }
-.test-cond-row.hit { background: rgba(82,196,26,0.1); }
-.test-cond-row.miss { background: rgba(255,77,79,0.08); }
-.test-cond-row.err { background: rgba(250,173,20,0.1); }
 
-/* ── 目录条目样式 ── */
-.dir-row td { background: rgba(250,173,20,0.04); }
-.dir-row:hover td { background: rgba(250,173,20,0.1) !important; }
-.dir-row.selected td { background: rgba(250,173,20,0.12) !important; }
-.dir-row.preview-active td { background: rgba(250,173,20,0.18) !important; }
+.preview-header:hover {
+  background: var(--bg-tertiary);
+}
 
-.dir-badge {
-  display: inline-block;
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background: rgba(250,173,20,0.2);
-  color: var(--yellow);
-  margin-right: 6px;
-  vertical-align: middle;
+.preview-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.preview-meta {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.preview-meta span {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.preview-toggle {
+  transition: transform var(--transition-normal);
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.preview-body {
+  flex: 1;
+  overflow: auto;
+  padding: 24px;
+}
+
+.preview-content {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.preview-content pre {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.preview-content img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: var(--bg-tertiary);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--accent-blue);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 4px var(--accent-blue-light);
+  transform: translateY(-1px);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.drive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.drive-card {
+  background: var(--bg-tertiary);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.drive-card:hover {
+  border-color: var(--border);
+  background: var(--bg-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.drive-card.selected {
+  border-color: var(--accent-blue);
+  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+  box-shadow: var(--shadow-md);
+}
+
+.drive-letter {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--accent-blue);
+  margin-bottom: 6px;
+}
+
+.drive-card.selected .drive-letter {
+  color: var(--accent-blue);
+}
+
+.drive-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.info-box {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.9;
+  box-shadow: var(--shadow-sm);
+}
+
+.info-box strong {
+  color: var(--text-primary);
   font-weight: 600;
 }
 
-/* ── 软件目录样式 ── */
-:root { --purple: #b37feb; }
-
-.dir-row td { background: rgba(114,46,209,0.04); }
-.dir-row:hover td { background: rgba(114,46,209,0.1) !important; }
-.dir-row.selected td { background: rgba(114,46,209,0.12) !important; }
-.dir-row.preview-active td { background: rgba(114,46,209,0.18) !important; }
-
-/* 已知软件标签 */
-.known-badge {
-  display: inline-block;
-  font-size: 10px;
-  padding: 1px 7px;
-  border-radius: 3px;
-  background: rgba(114,46,209,0.18);
-  color: #b37feb;
-  margin-right: 6px;
-  vertical-align: middle;
-  font-weight: 600;
+/* ===== Toast ===== */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* 未知软件标签 */
-.unknown-badge {
-  display: inline-block;
-  font-size: 10px;
-  padding: 1px 7px;
-  border-radius: 3px;
-  background: rgba(255,255,255,0.06);
-  color: var(--text2);
-  margin-right: 6px;
-  vertical-align: middle;
-  font-weight: 600;
+.toast {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  min-width: 320px;
+  box-shadow: var(--shadow-xl);
+  animation: slideInRight 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all var(--transition-normal);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.toast-success {
+  border-left: 4px solid var(--accent-green);
+}
+
+.toast-error {
+  border-left: 4px solid var(--accent-red);
+}
+
+.toast-info {
+  border-left: 4px solid var(--accent-blue);
+}
+
+/* ===== File Change Notification ===== */
+.file-notification {
+  position: fixed;
+  top: 100px;
+  right: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-xl);
+  z-index: 1000;
+  animation: slideInRight 0.3s ease;
+  transition: all var(--transition-normal);
+}
+
+.file-notification:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.notification-icon {
+  font-size: 28px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.notification-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 22px;
+  padding: 0;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.notification-close:hover {
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 5px;
+  transition: all var(--transition-normal);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  transform: scale(1.1);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 220px;
+  }
+  
+  .app-container {
+    padding: 12px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+  
+  .app-container {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .header {
+    padding: 16px 18px;
+    flex-wrap: wrap;
+  }
+  
+  .logo-text {
+    font-size: 18px;
+  }
+  
+  .toolbar {
+    padding: 16px;
+  }
+  
+  .search-box {
+    min-width: 100%;
+    max-width: 100%;
+  }
 }
 </style>
 </head>
 <body>
 
-<!-- ── Toast 容器 ── -->
-<div class="toast-container" id="toastContainer"></div>
+<div class="app-container">
+  <div class="main-card">
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
-<!-- ── 顶部导航 ── -->
-<div class="topbar">
-  <div class="logo">🔍 文件清理工具</div>
-  <div class="status-bar" id="statusBar">
-    <div class="status-dot" id="statusDot"></div>
-    <span id="statusText">就绪，点击「开始扫描」</span>
-    <span id="autoRefreshStatus" style="font-size:11px; color:var(--text2); margin-left:8px;">🔄 自动刷新中</span>
-    <div class="progress-bar-wrap" id="progressWrap" style="display:none">
-      <div class="progress-bar" id="progressBar" style="width:100%"></div>
-    </div>
-    <span id="progressStats" style="display:none; font-size:12px;"></span>
-  </div>
-  <div class="actions">
-    <button class="btn btn-ghost btn-sm" onclick="openExportModal()">📋 导出清单</button>
-    <button class="btn btn-primary" id="btnScan" onclick="openScanConfig()">▶ 开始扫描</button>
-    <button class="btn" id="btnPause" onclick="pauseScan()" style="display:none">⏸ 暂停</button>
-    <button class="btn btn-success" id="btnResume" onclick="resumeScan()" style="display:none">▶ 继续</button>
-    <button class="btn btn-ghost btn-sm" id="btnStop" onclick="stopScan()" style="display:none">⏹ 停止</button>
-  </div>
-</div>
-
-<!-- ── 主体 ── -->
-<div class="main">
-
-  <!-- 侧边栏 -->
-  <div class="sidebar">
-    <div class="sidebar-title">文件分类</div>
-    <div class="sidebar-list" id="sidebarList">
-      <div class="sidebar-item active" data-key="all" onclick="filterCategory('all', this)">
-        <span class="icon">📁</span>
-        <span class="label">全部文件</span>
-        <span class="badge" id="badge-all">0</span>
-      </div>
-      <!-- 动态生成分类 -->
-    </div>
-    
-    <!-- 自定义规则入口 -->
-    <div style="padding: 8px; border-top: 1px solid var(--border); flex-shrink:0;">
-      <button class="btn btn-ghost" style="width:100%; justify-content:center; gap:6px;"
-              onclick="openRuleManager()">
-        ⚙️ 自定义分类规则
-      </button>
-    </div>
-  </div>
-
-  <!-- 内容区 -->
-  <div class="content">
-
-    <!-- 工具栏 -->
-    <div class="toolbar">
-      <div class="search-box">
-        <span>🔍</span>
-        <input type="text" id="searchInput" placeholder="搜索文件名或路径..."
-               oninput="debounceSearch(this.value)">
-      </div>
-      <select id="timeRangeFilter" onchange="applyFilters(); toggleCustomDateInputs();">
-        <option value="all">⏰ 全部时间</option>
-        <option value="1month">⏰ 最近1个月</option>
-        <option value="3months">⏰ 最近3个月</option>
-        <option value="1year">⏰ 最近1年</option>
-        <option value="older1year">⏰ 1年以前</option>
-        <option value="custom">⏰ 自定义范围</option>
-      </select>
-      <div id="customDateInputs" class="custom-date-inputs">
-        <input type="date" id="timeStart" onchange="applyFilters()">
-        <span class="date-separator">至</span>
-        <input type="date" id="timeEnd" onchange="applyFilters()">
-      </div>
-      <select id="riskFilter" onchange="applyFilters()">
-        <option value="">全部风险</option>
-        <option value="high">🔴 高风险</option>
-        <option value="medium">🟡 中风险</option>
-        <option value="low">🟢 低风险</option>
-      </select>
-      <label style="display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
-        <input type="checkbox" id="personalOnly" onchange="applyFilters()">
-        <span style="font-size:12px;">🏠 只看个人目录</span>
-      </label>
-      <label style="display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
-        <input type="checkbox" id="suspectedOnly" onchange="applyFilters()">
-        <span style="font-size:12px;">❓ 只看疑似个人</span>
-      </label>
-      <div class="toolbar-right">
-        <button class="btn btn-ghost btn-sm" onclick="toggleSelectAll()">☑ 全选</button>
-        <button class="btn btn-ghost btn-sm" onclick="openPersonalDirManager()">🏠 个人目录</button>
-        <button class="btn btn-ghost btn-sm" onclick="openSmartStats()">🧠 智能统计</button>
-      </div>
-    </div>
-
-    <!-- 选中操作栏 -->
-    <div class="selection-bar" id="selectionBar">
-      <span class="sel-count" id="selCount">已选 0 个文件</span>
-      <button class="btn btn-primary btn-sm" onclick="markSelectedDirsAsPersonal()">
-        🧠 智能学习选中目录
-      </button>
-      <button class="btn btn-warn btn-sm" onclick="deleteSelected('trash')">
-        📦 移入回收站
-      </button>
-      <button class="btn btn-danger btn-sm" onclick="deleteSelected('permanent')">
-        🗑️ 永久删除
-      </button>
-      <button class="btn btn-ghost btn-sm" onclick="clearSelection()">取消选择</button>
-    </div>
-
-    <!-- 文件列表 -->
-    <div class="file-list-wrap" id="fileListWrap">
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">📂</div>
-        <p>还没有扫描结果<br>点击右上角「开始扫描」启动全盘扫描</p>
-      </div>
-      <table class="file-table" id="fileTable" style="display:none">
-        <thead>
-          <tr>
-            <th style="width:36px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
-            <th>文件名</th>
-            <th style="width:100px">分类</th>
-            <th style="width:80px">风险</th>
-            <th style="width:80px">大小</th>
-            <th style="width:140px">修改时间</th>
-            <th style="width:80px">操作</th>
-          </tr>
-        </thead>
-        <tbody id="fileTableBody"></tbody>
-      </table>
-    </div>
-
-    <!-- 分页 -->
-    <div id="paginationBar" style="display:none; padding:8px 16px; border-top:1px solid var(--border);
-         align-items:center; gap:10px; flex-shrink:0; background:var(--bg2); font-size:12px; color:var(--text2);">
-      <span id="pageInfo"></span>
-      <div style="margin-left:auto; display:flex; gap:6px;">
-        <button class="btn btn-ghost btn-sm" onclick="changePage(-1)" id="btnPrev">◀ 上一页</button>
-        <button class="btn btn-ghost btn-sm" onclick="changePage(1)" id="btnNext">下一页 ▶</button>
-      </div>
-    </div>
-
-    <!-- 预览面板 -->
-    <div class="preview-panel collapsed" id="previewPanel">
-      <div class="preview-header" onclick="togglePreview()">
-        <span class="preview-title" id="previewTitle">📄 文件预览（点击文件行查看）</span>
-        <div class="preview-meta" id="previewMeta"></div>
-        <span id="previewToggleIcon">▲</span>
-      </div>
-      <div class="preview-body" id="previewBody"></div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── 扫描配置弹窗 ── -->
-<div class="modal-overlay" id="scanModal" style="display:none">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>🚀 扫描配置</h2>
-      <button class="btn btn-ghost btn-sm" onclick="closeScanModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="resumeInfo" style="display:none; margin-bottom:16px; background:linear-gradient(135deg, #1890ff20, #52c41a20); border:1px solid var(--border); border-radius:var(--radius); padding:14px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:20px;">🔄</span>
-            <span style="font-weight:600; color:var(--text);">发现未完成的扫描</span>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="clearResumeProgress()" style="font-size:12px;">清除</button>
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-section">
+        <div class="logo-icon">🗑️</div>
+        <div>
+          <div class="logo-text">FileClean Pro</div>
+          <div class="logo-sub">智能文件清理与分类</div>
         </div>
-        <div style="font-size:12px; color:var(--text2); line-height:1.6;">
-          <div id="resumeDetails" style="margin-bottom:8px;"></div>
-          <div style="display:flex; gap:8px;">
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-              <input type="checkbox" id="resumeCheck">
-              <span>从断点继续扫描</span>
+      </div>
+
+      <div class="status-section">
+        <div class="status-indicator">
+          <div class="status-dot" id="statusDot"></div>
+          <div class="status-text" id="statusText">准备就绪</div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar" id="progressBarContainer" style="display: none;">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-stats" id="progressStats" style="display: none;"></div>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <button class="btn btn-ghost" id="btnExport" onclick="openExportModal()">
+          <span>📋</span>
+          <span>导出清单</span>
+        </button>
+        <button class="btn btn-primary" id="btnScan" onclick="openScanConfig()">
+          <span>▶</span>
+          <span>开始扫描</span>
+        </button>
+        <button class="btn btn-warning" id="btnPause" onclick="pauseScan()" style="display: none;">
+          <span>⏸</span>
+          <span>暂停</span>
+        </button>
+        <button class="btn btn-success" id="btnResume" onclick="resumeScan()" style="display: none;">
+          <span>▶</span>
+          <span>继续</span>
+        </button>
+        <button class="btn btn-ghost" id="btnStop" onclick="stopScan()" style="display: none;">
+          <span>⏹</span>
+          <span>停止</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">文件分类</div>
+          <div class="sidebar-subtitle">按类别筛选文件</div>
+        </div>
+        <div class="sidebar-nav" id="sidebarList">
+          <div class="sidebar-item active" data-key="all" onclick="filterCategory('all', this)">
+            <div class="sidebar-icon">📁</div>
+            <div class="sidebar-label">全部文件</div>
+            <div class="sidebar-badge" id="badge-all">0</div>
+          </div>
+        </div>
+        <div class="sidebar-footer">
+          <button class="btn btn-sm" style="width: 100%; justify-content: center; gap: 8px; background: var(--accent-blue); color: white;" onclick="openRuleManager()">
+            <span>⚙️</span>
+            <span>自定义分类规则</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索文件名或路径..." oninput="debounceSearch(this.value)">
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="timeRangeFilter" onchange="applyFilters(); toggleCustomDateInputs();">
+              <option value="all">⏰ 全部时间</option>
+              <option value="1month">⏰ 最近1个月</option>
+              <option value="3months">⏰ 最近3个月</option>
+              <option value="1year">⏰ 最近1年</option>
+              <option value="older1year">⏰ 1年以前</option>
+              <option value="custom">⏰ 自定义范围</option>
+            </select>
+
+            <div class="custom-date-inputs" id="customDateInputs" style="display: none; gap: 10px; align-items: center;">
+              <input type="date" id="timeStart" onchange="applyFilters()">
+              <span style="color: var(--text-muted);">至</span>
+              <input type="date" id="timeEnd" onchange="applyFilters()">
+            </div>
+
+            <select class="filter-select" id="riskFilter" onchange="applyFilters();">
+              <option value="">全部风险</option>
+              <option value="high">🔴 高风险</option>
+              <option value="medium">🟡 中风险</option>
+              <option value="low">🟢 低风险</option>
+            </select>
+
+            <label class="filter-checkbox">
+              <input type="checkbox" id="personalOnly" onchange="applyFilters();">
+              <span>🏠 只看个人目录</span>
+            </label>
+
+            <label class="filter-checkbox">
+              <input type="checkbox" id="suspectedOnly" onchange="applyFilters();">
+              <span>❓ 只看疑似个人</span>
             </label>
           </div>
+
+          <div class="toolbar-actions">
+            <button class="btn btn-sm btn-ghost" onclick="toggleSelectAll()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+              <span>☑</span>
+              <span>全选</span>
+            </button>
+            <button class="btn btn-sm btn-ghost" onclick="openPersonalDirManager()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+              <span>🏠</span>
+              <span>个人目录</span>
+            </button>
+            <button class="btn btn-sm btn-ghost" onclick="openSmartStats()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+              <span>🧠</span>
+              <span>智能统计</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Selection Bar -->
+        <div class="selection-bar" id="selectionBar">
+          <div class="selection-count">
+            <span>✨</span>
+            <span id="selCount">已选择 0 个文件</span>
+          </div>
+          <div class="selection-actions">
+            <button class="btn btn-sm btn-primary" onclick="markSelectedDirsAsPersonal()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+              <span>🧠</span>
+              <span>智能学习选中目录</span>
+            </button>
+            <button class="btn btn-sm btn-warning" onclick="deleteSelected('trash')">
+              <span>📦</span>
+              <span>移入回收站</span>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="deleteSelected('permanent')">
+              <span>🗑️</span>
+              <span>永久删除</span>
+            </button>
+            <button class="btn btn-sm" onclick="clearSelection()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+              <span>✕</span>
+              <span>取消选择</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- File List -->
+        <div class="file-list-container">
+          <div class="file-list-wrapper" id="fileListWrap">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">📂</div>
+              <div class="empty-text">
+                还没有扫描结果<br>
+                <strong>点击右上角「开始扫描」启动全盘扫描</strong>
+              </div>
+            </div>
+
+            <table class="file-table" id="fileTable" style="display: none;">
+              <thead>
+                <tr>
+                  <th style="width: 44px;">
+                    <input type="checkbox" id="checkAll" onchange="toggleAll(this)" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue); appearance: none; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); transition: all var(--transition-normal); position: relative; box-shadow: var(--shadow-sm);">
+                    <style>
+                      #checkAll:hover {
+                        border-color: var(--accent-blue);
+                        transform: scale(1.1);
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+                      }
+                      #checkAll:checked {
+                        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+                        border-color: var(--accent-blue);
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+                      }
+                      #checkAll:checked::after {
+                        content: '✓';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        color: white;
+                        font-size: 14px;
+                        font-weight: bold;
+                      }
+                    </style>
+                  </th>
+                  <th>文件名</th>
+                  <th style="width: 130px;">分类</th>
+                  <th style="width: 110px;">风险</th>
+                  <th style="width: 110px;">大小</th>
+                  <th style="width: 170px;">修改时间</th>
+                  <th style="width: 110px;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="fileTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination" id="paginationBar">
+            <div id="pageInfo"></div>
+            <div class="pagination-buttons">
+              <button class="btn btn-sm" onclick="changePage(-1)" id="btnPrev" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">◀ 上一页</button>
+              <button class="btn btn-sm" onclick="changePage(1)" id="btnNext" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">下一页 ▶</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel collapsed" id="previewPanel">
+          <div class="preview-header" onclick="togglePreview()">
+            <div class="preview-title" id="previewTitle">
+            </div>
+            <div class="preview-meta" id="previewMeta">
+            </div>
+            <div class="preview-toggle" id="previewToggleIcon">▼</div>
+          </div>
+          <div class="preview-body" id="previewBody">
+          </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Modal -->
+<div class="modal-overlay" id="scanModal" style="display: none;">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>🚀</span>
+        <span>扫描配置</span>
+      </div>
+      <button class="btn btn-sm" onclick="closeScanModal()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); padding: 8px 12px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Resume Info -->
+      <div id="resumeInfo" style="display: none; margin-bottom: 24px; background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-green-light) 100%); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 26px;">🔄</span>
+            <span style="font-weight: 700; color: var(--text-primary); font-size: 15px;">发现未完成的扫描</span>
+          </div>
+          <button class="btn btn-sm" onclick="clearResumeProgress()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border); font-size: 12px;">清除</button>
+        </div>
+        <div style="font-size: 13px; color: var(--text-secondary); line-height: 2;" id="resumeDetails"></div>
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+          <label class="filter-checkbox" style="background: var(--bg-secondary);">
+            <input type="checkbox" id="resumeCheck">
+            <span>从断点继续扫描</span>
+          </label>
+        </div>
+      </div>
+
       <div class="form-group">
         <label>选择扫描盘符（可多选）</label>
         <div class="drive-grid" id="driveGrid">加载中...</div>
       </div>
+
       <div class="form-group">
         <label>额外排除目录（每行一个路径，可不填）</label>
         <textarea id="excludeDirs" placeholder="例如：D:\work\company_project
 E:\archive"></textarea>
       </div>
-      <div style="background:var(--bg3); border-radius:var(--radius); padding:12px; font-size:12px; color:var(--text2); line-height:1.8;">
-        💡 <b style="color:var(--text)">多线程扫描：</b>自动使用多线程处理，速度提升 2-4 倍<br>
-        💡 <b style="color:var(--text)">默认排除：</b>Windows系统目录、Program Files、node_modules、
-        __pycache__、.git、venv 等开发依赖目录<br>
-        💡 <b style="color:var(--text)">C盘策略：</b>仅扫描当前用户目录 (C:\Users\当前用户)
+
+      <div class="info-box">
+        <strong>💡 多线程扫描：</strong>自动使用多线程处理，速度提升 2-4 倍<br>
+        <strong>💡 默认排除：</strong>Windows系统目录、Program Files、node_modules、__pycache__、.git、venv 等开发依赖目录<br>
+        <strong>💡 C盘策略：</strong>仅扫描当前用户目录 (C:\Users\当前用户)
+      </div>
+
+      <div style="margin-top: 18px; display: flex; align-items: center; gap: 12px;">
+        <label class="filter-checkbox">
+          <input type="checkbox" id="fastModeCheck">
+          <span>⚡ 快速扫描模式（更快但精度略低）</span>
+        </label>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeScanModal()">取消</button>
-      <button class="btn btn-primary" onclick="startScan()">▶ 开始扫描</button>
+      <button class="btn btn-sm" onclick="closeScanModal()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
+      <button class="btn btn-primary" onclick="startScan()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">开始扫描</button>
     </div>
   </div>
 </div>
 
-<!-- ── 确认删除弹窗 ── -->
-<div class="modal-overlay" id="confirmModal" style="display:none">
-  <div class="modal" style="width:420px">
-    <div class="modal-body" style="padding:24px">
-      <div style="font-size:40px; text-align:center; margin-bottom:12px" id="confirmIcon">⚠️</div>
-      <h3 style="text-align:center; font-size:16px; margin-bottom:8px" id="confirmTitle">确认删除</h3>
-      <p style="text-align:center; color:var(--text2); font-size:13px; margin-bottom:16px" id="confirmDesc"></p>
-      <div class="file-list-preview" id="confirmFileList"></div>
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <button class="btn btn-ghost" onclick="closeConfirm()">取消</button>
-        <button class="btn" id="confirmBtn" onclick="executeDelete()">确认</button>
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal" style="display: none;">
+  <div class="modal" style="width: 500px;">
+    <div class="modal-body" style="padding: 32px; text-align: center;">
+      <div style="font-size: 56px; margin-bottom: 16px;" id="confirmIcon">⚠️</div>
+      <h3 style="font-size: 19px; margin-bottom: 8px; font-weight: 700;" id="confirmTitle">确认删除</h3>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;" id="confirmDesc"></p>
+      <div class="file-list-preview" id="confirmFileList" style="max-height: 130px; overflow-y: auto; text-align: left; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 16px;"></div>
+      <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px;">
+        <button class="btn btn-sm" onclick="closeConfirm()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
+        <button class="btn" id="confirmBtn" onclick="executeDelete()" style="background: linear-gradient(135deg, var(--accent-red) 0%, #dc2626 100%); color: white;">确认</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     规则管理弹窗
-══════════════════════════════════════════ -->
-<div class="modal-overlay" id="ruleManagerModal" style="display:none">
-  <div class="modal" style="width:680px; max-height:85vh;">
+<!-- Rule Manager Modal -->
+<div class="modal-overlay" id="ruleManagerModal" style="display: none;">
+  <div class="modal" style="width: 740px; max-height: 90vh;">
     <div class="modal-header">
-      <h2>⚙️ 自定义分类规则</h2>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button id="clearRulesBtn" class="btn btn-danger btn-sm" onclick="confirmClearRules()">🗑 一键清除</button>
-        <button class="btn btn-ghost btn-sm" onclick="closeRuleManager()">✕</button>
+      <div class="modal-title">
+        <span>⚙️</span>
+        <span>自定义分类规则</span>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-danger btn-sm" id="clearRulesBtn" onclick="confirmClearRules()">
+          <span>🗑️</span>
+          <span>一键清除</span>
+        </button>
+        <button class="btn btn-sm" onclick="closeRuleManager()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);">✕</button>
       </div>
     </div>
-
-    <div class="modal-body" style="padding:0;">
-      <!-- 规则列表 -->
-      <div id="ruleListPanel" style="display:flex; flex-direction:column; height:100%;">
-        <div style="padding:12px 16px; border-bottom:1px solid var(--border);
-                    display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-size:12px; color:var(--text2)">
-            已有 <b id="ruleCount" style="color:var(--text)">0</b> 条自定义规则
+    <div class="modal-body" style="padding: 0;">
+      <div id="ruleListPanel" style="display: flex; flex-direction: column; height: 100%;">
+        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-tertiary);">
+          <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+            已有 <strong style="color: var(--text-primary);" id="ruleCount">0</strong> 条自定义规则
           </span>
-          <button id="addRuleBtn" class="btn btn-primary btn-sm" onclick="openRuleEditor(null)">
-            + 新增规则
+          <button class="btn btn-sm btn-primary" id="addRuleBtn" onclick="openRuleEditor(null)" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+            <span>+</span>
+            <span>新增规则</span>
           </button>
         </div>
-        <div style="flex:1; overflow-y:auto; padding:8px 12px;" id="ruleListBody">
-          <!-- 动态生成 -->
+        <div style="flex: 1; overflow-y: auto; padding: 16px 20px;" id="ruleListBody">
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     规则编辑器弹窗
-══════════════════════════════════════════ -->
-<div class="modal-overlay" id="ruleEditorModal" style="display:none; z-index:1100;">
-  <div class="modal" style="width:680px; max-height:90vh;">
+<!-- Rule Editor Modal -->
+<div class="modal-overlay" id="ruleEditorModal" style="display: none; z-index: 1100;">
+  <div class="modal" style="width: 760px; max-height: 95vh;">
     <div class="modal-header">
-      <h2 id="editorTitle">新增规则</h2>
-      <button class="btn btn-ghost btn-sm" onclick="closeRuleEditor()">✕</button>
+      <div class="modal-title" id="editorTitle">
+        <span>➕</span>
+        <span>新增规则</span>
+      </div>
+      <button class="btn btn-sm" onclick="closeRuleEditor()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);">✕</button>
     </div>
-
-    <div class="modal-body" style="overflow-y:auto;">
-
-      <!-- 基础信息 -->
-      <div style="display:grid; grid-template-columns:1fr 80px 120px 80px; gap:12px; margin-bottom:16px;">
-        <div class="form-group" style="margin:0;">
+    <div class="modal-body" style="overflow-y: auto;">
+      <!-- Basic Info -->
+      <div style="display: grid; grid-template-columns: 1fr 80px 150px 80px; gap: 18px; margin-bottom: 22px;">
+        <div class="form-group" style="margin: 0;">
           <label>规则名称 *</label>
-          <input type="text" id="ruleName" placeholder="例如：我的简历文件"
-                 style="width:100%; background:var(--bg3); border:1px solid var(--border);
-                        border-radius:var(--radius); color:var(--text); padding:7px 10px;
-                        font-size:13px; outline:none;">
+          <input type="text" id="ruleName" placeholder="例如：我的简历文件">
         </div>
-        <div class="form-group" style="margin:0;">
+        <div class="form-group" style="margin: 0;">
           <label>图标</label>
-          <input type="text" id="ruleIcon" value="📁" maxlength="2"
-                 style="width:100%; background:var(--bg3); border:1px solid var(--border);
-                        border-radius:var(--radius); color:var(--text); padding:7px 10px;
-                        font-size:20px; text-align:center; outline:none;">
+          <input type="text" id="ruleIcon" value="📁" maxlength="2" style="text-align: center; font-size: 24px;">
         </div>
-        <div class="form-group" style="margin:0;">
+        <div class="form-group" style="margin: 0;">
           <label>风险等级</label>
-          <select id="ruleRisk" style="width:100%;">
+          <select id="ruleRisk" style="width: 100%;">
             <option value="high">🔴 高风险</option>
             <option value="medium" selected>🟡 中风险</option>
             <option value="low">🟢 低风险</option>
           </select>
         </div>
-        <div class="form-group" style="margin:0;">
+        <div class="form-group" style="margin: 0;">
           <label>启用</label>
-          <div style="padding:8px 0;">
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px; color:var(--text);">
+          <div style="padding: 12px 0;">
+            <label class="filter-checkbox" style="background: var(--bg-tertiary);">
               <input type="checkbox" id="ruleEnabled" checked> 启用
             </label>
           </div>
         </div>
       </div>
 
-      <!-- 条件逻辑 & 大小写 -->
-      <div style="display:flex; align-items:center; gap:20px; margin-bottom:12px;
-                  padding:10px 12px; background:var(--bg3); border-radius:var(--radius);">
-        <div style="font-size:12px; color:var(--text2); font-weight:600;">条件匹配逻辑</div>
-        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
+      <!-- Logic & Case -->
+      <div style="display: flex; align-items: center; gap: 26px; margin-bottom: 18px; padding: 14px 18px; background: var(--bg-tertiary); border-radius: var(--radius-md); flex-wrap: wrap;">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-muted);">条件匹配逻辑</div>
+        <label class="filter-checkbox">
           <input type="radio" name="ruleLogic" id="logicOR" value="OR" checked>
-          OR（任意条件命中即匹配）
+          <span>OR（任意条件命中即匹配）</span>
         </label>
-        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13px;">
+        <label class="filter-checkbox">
           <input type="radio" name="ruleLogic" id="logicAND" value="AND">
-          AND（所有条件都要命中）
+          <span>AND（所有条件都要命中）</span>
         </label>
-        <div style="margin-left:auto;">
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:var(--text2);">
-            <input type="checkbox" id="ruleCaseSensitive"> 区分大小写
+        <div style="margin-left: auto;">
+          <label class="filter-checkbox">
+            <input type="checkbox" id="ruleCaseSensitive">
+            <span style="font-size: 13px;">区分大小写</span>
           </label>
         </div>
       </div>
 
-      <!-- 条件列表 -->
-      <div style="margin-bottom:8px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <label style="font-size:12px; color:var(--text2); font-weight:600; margin:0;">
-            匹配条件 * （至少一个）
-          </label>
-          <button class="btn btn-ghost btn-sm" onclick="addCondition()">+ 添加条件</button>
+      <!-- Condition List -->
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <label style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin: 0;">匹配条件 * （至少一个）</label>
+          <button class="btn btn-sm" onclick="addCondition()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+            <span>+</span>
+            <span>添加条件</span>
+          </button>
         </div>
-        <div id="conditionList" style="display:flex; flex-direction:column; gap:8px;">
-          <!-- 动态生成 -->
+        <div id="conditionList" style="display: flex; flex-direction: column; gap: 12px;">
         </div>
       </div>
 
-      <!-- 测试区域 -->
-      <div style="border:1px solid var(--border); border-radius:var(--radius);
-                  padding:12px; margin-top:16px;">
-        <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:8px;">
-          🧪 测试规则
+      <!-- Test Area -->
+      <div style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; margin-top: 24px; background: var(--bg-tertiary);">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px;">🧪 测试规则</div>
+        <div style="display: flex; gap: 12px; margin-bottom: 14px;">
+          <input type="text" id="testPath" placeholder="输入文件路径测试，例如：D:\personal\我的简历2024.docx" style="flex: 1;">
+          <button class="btn btn-sm" onclick="runTestRule()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+            <span>▶</span>
+            <span>测试</span>
+          </button>
         </div>
-        <div style="display:flex; gap:8px; margin-bottom:10px;">
-          <input type="text" id="testPath"
-                 placeholder="输入文件路径测试，例如：D:\personal\我的简历2024.docx"
-                 style="flex:1; background:var(--bg3); border:1px solid var(--border);
-                        border-radius:var(--radius); color:var(--text); padding:7px 10px;
-                        font-size:12px; outline:none; font-family:monospace;">
-          <button class="btn btn-ghost btn-sm" onclick="runTestRule()">▶ 测试</button>
-        </div>
-        <!-- 测试结果 -->
-        <div id="testResult" style="display:none;">
-          <div id="testHitBadge" style="margin-bottom:8px;"></div>
-          <div id="testConditionResults"
-               style="display:flex; flex-direction:column; gap:4px; font-size:12px;">
+        <div id="testResult" style="display: none;">
+          <div id="testHitBadge" style="margin-bottom: 12px;"></div>
+          <div id="testConditionResults" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
           </div>
         </div>
       </div>
 
-      <!-- 错误提示 -->
-      <div id="editorErrors" style="display:none; margin-top:12px;
-           background:rgba(255,77,79,0.1); border:1px solid rgba(255,77,79,0.3);
-           border-radius:var(--radius); padding:10px 12px; font-size:12px; color:var(--red);">
+      <!-- Error Display -->
+      <div id="editorErrors" style="display: none; margin-top: 20px; background: var(--accent-red-light); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 14px 18px; font-size: 13px; color: var(--accent-red);">
       </div>
     </div>
-
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeRuleEditor()">取消</button>
-      <button class="btn btn-primary" onclick="saveRule()">💾 保存规则</button>
+      <button class="btn btn-sm" onclick="closeRuleEditor()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
+      <button class="btn btn-primary" onclick="saveRule()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+        <span>💾</span>
+        <span>保存规则</span>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ── 个人目录管理弹窗 ── -->
-<div class="modal-overlay" id="personalDirModal" style="display:none">
-  <div class="modal" style="width:500px;">
+<!-- Personal Dir Modal -->
+<div class="modal-overlay" id="personalDirModal" style="display: none;">
+  <div class="modal" style="width: 580px;">
     <div class="modal-header">
-      <h2>🏠 个人目录管理</h2>
-      <button class="modal-close" onclick="closePersonalDirManager()">✕</button>
+      <div class="modal-title">
+        <span>🏠</span>
+        <span>个人目录管理</span>
+      </div>
+      <button class="btn btn-sm" onclick="closePersonalDirManager()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);">✕</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px; color:var(--text2); margin-bottom:16px;">
+      <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.8;">
         添加您认为是"个人内容"的目录，这些目录下的所有文件都会被标记为"个人目录文件"。
       </p>
-      
-      <!-- 添加新目录 -->
-      <div style="display:flex; gap:8px; margin-bottom:16px;">
-        <input type="text" id="newPersonalDir" placeholder="输入目录路径，或点击选择..."
-               style="flex:1; background:var(--bg3); border:1px solid var(--border);
-                      border-radius:var(--radius); color:var(--text); padding:8px 12px;
-                      font-size:12px; outline:none;">
-        <button class="btn btn-ghost btn-sm" onclick="browsePersonalDir()">📂 选择</button>
-        <button class="btn btn-primary btn-sm" onclick="addPersonalDir()">➕ 添加</button>
+      <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+        <input type="text" id="newPersonalDir" placeholder="输入目录路径，或点击选择..." style="flex: 1;">
+        <button class="btn btn-sm" onclick="browsePersonalDir()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+          <span>📂</span>
+          <span>选择</span>
+        </button>
+        <button class="btn btn-sm btn-primary" onclick="addPersonalDir()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+          <span>➕</span>
+          <span>添加</span>
+        </button>
       </div>
-      
-      <!-- 目录列表 -->
-      <div id="personalDirList" style="max-height:300px; overflow-y:auto;">
-        <!-- 动态生成 -->
+      <div id="personalDirList" style="max-height: 320px; overflow-y: auto;">
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="clearAllPersonalDirs()">🗑️ 清空全部</button>
-      <button class="btn" onclick="closePersonalDirManager()">关闭</button>
+      <button class="btn btn-sm btn-danger" onclick="clearAllPersonalDirs()">
+        <span>🗑️</span>
+        <span>清空全部</span>
+      </button>
+      <button class="btn btn-sm" onclick="closePersonalDirManager()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+        <span>✕</span>
+        <span>关闭</span>
+      </button>
     </div>
   </div>
 </div>
 
-<!-- ── 智能识别统计面板 ── -->
-<div class="modal-overlay" id="smartStatsModal" style="display:none">
-  <div class="modal" style="width:600px;">
+<!-- Smart Stats Modal -->
+<div class="modal-overlay" id="smartStatsModal" style="display: none;">
+  <div class="modal" style="width: 640px;">
     <div class="modal-header">
-      <h2>🧠 智能识别统计</h2>
-      <button class="modal-close" onclick="closeSmartStats()">✕</button>
+      <div class="modal-title">
+        <span>🧠</span>
+        <span>智能识别统计</span>
+      </div>
+      <button class="btn btn-sm" onclick="closeSmartStats()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);">✕</button>
     </div>
     <div class="modal-body">
-      <!-- 统计信息 -->
-      <div id="smartStatsContent" style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px;">
-        <!-- 动态生成 -->
+      <div id="smartStatsContent" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
       </div>
-      
-      <!-- 学习到的模式 -->
-      <div style="margin-top:16px;">
-        <div style="font-size:13px; font-weight:600; color:var(--text); margin-bottom:8px;">📊 学习到的模式</div>
-        <div id="learnedPatterns" style="max-height:200px; overflow-y:auto; padding:10px; background:var(--bg3); border-radius:var(--radius);">
-          <!-- 动态生成 -->
+      <div style="margin-top: 20px;">
+        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">
+          📊 学习到的模式
+        </div>
+        <div id="learnedPatterns" style="max-height: 220px; overflow-y: auto; padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md);">
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="refreshSmartStats()">🔄 刷新</button>
-      <button class="btn" onclick="closeSmartStats()">关闭</button>
+      <button class="btn btn-sm" onclick="refreshSmartStats()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+        <span>🔄</span>
+        <span>刷新</span>
+      </button>
+      <button class="btn btn-sm" onclick="closeSmartStats()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+        <span>✕</span>
+        <span>关闭</span>
+      </button>
     </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-// 状态
-// ═══════════════════════════════════════════════
 const State = {
-  allResults: [],           // 当前页所有结果
-  selectedIds: new Set(),   // 选中的文件ID
+  allResults: [],
+  selectedIds: new Set(),
   currentCategory: 'all',
   currentRisk: '',
   currentKeyword: '',
@@ -1163,7 +1865,6 @@ const State = {
   previewOpen: false,
   activeRowId: null,
   summaryData: [],
-  // 待执行的删除动作
   pendingDelete: { type: '', paths: [], ids: [] },
 };
 
@@ -1173,18 +1874,12 @@ let refreshTimer = null;
 let backgroundRefreshTimer = null;
 let isManualRefresh = false;
 
-// ═══════════════════════════════════════════════
-// 初始化
-// ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   loadSummary();
   toggleCustomDateInputs();
   startBackgroundRefresh();
 });
 
-// ═══════════════════════════════════════════════
-// 后台自动刷新
-// ═══════════════════════════════════════════════
 function startBackgroundRefresh() {
   if (backgroundRefreshTimer) {
     clearInterval(backgroundRefreshTimer);
@@ -1203,36 +1898,24 @@ function stopBackgroundRefresh() {
   }
 }
 
-// ═══════════════════════════════════════════════
-// 文件变化提示
-// ═══════════════════════════════════════════════
-
 function showRemovedFilesNotification(removedCount) {
   if (removedCount === 0) return;
-  
-  // 如果已经有提示，更新它
   let notification = document.getElementById('fileChangeNotification');
   if (notification) {
     notification.remove();
   }
-  
-  // 创建新提示
   notification = document.createElement('div');
   notification.id = 'fileChangeNotification';
-  notification.className = 'file-change-notification';
-  
+  notification.className = 'file-notification';
   notification.innerHTML = `
-    <span class="icon">🗑️</span>
-    <div class="text">
-      <div class="title">已删除的文件</div>
-      <div class="desc">本次刷新发现 ${removedCount} 个文件已被删除，已自动从列表中移除</div>
+    <div class="notification-icon">🗑️</div>
+    <div class="notification-content">
+      <div class="notification-title">已删除的文件</div>
+      <div class="notification-desc">本次刷新发现 ${removedCount} 个文件已被删除，已自动从列表中移除</div>
     </div>
-    <button class="close" onclick="clearFileChangeNotification();">✕</button>
+    <button class="notification-close" onclick="clearFileChangeNotification()">✕</button>
   `;
-  
   document.body.appendChild(notification);
-  
-  // 5秒后自动消失
   setTimeout(() => {
     clearFileChangeNotification();
   }, 5000);
@@ -1245,19 +1928,11 @@ function clearFileChangeNotification() {
   }
 }
 
-// ═══════════════════════════════════════════════
-// 扫描配置弹窗
-// ═══════════════════════════════════════════════
 async function openScanConfig() {
   if (State.scanning) return;
   document.getElementById('scanModal').style.display = 'flex';
-  
-  // 重置恢复复选框
   document.getElementById('resumeCheck').checked = false;
-  
-  // 检查是否有可恢复的进度
   await checkResume();
-  
   await loadDrives();
 }
 
@@ -1267,7 +1942,6 @@ async function checkResume() {
     const data = await res.json();
     const resumeInfo = document.getElementById('resumeInfo');
     const resumeDetails = document.getElementById('resumeDetails');
-    
     if (data.can_resume && data.resume_data) {
       resumeInfo.style.display = 'block';
       const rd = data.resume_data;
@@ -1318,14 +1992,13 @@ async function loadDrives() {
       grid.appendChild(card);
     });
   } catch (e) {
-    grid.innerHTML = '<span style="color:var(--red)">加载盘符失败</span>';
+    grid.innerHTML = '<span style="color: var(--accent-red);">加载盘符失败</span>';
   }
 }
 
 async function startScan() {
   const resumeCheck = document.getElementById('resumeCheck');
   const resume = resumeCheck ? resumeCheck.checked : false;
-  
   if (!resume) {
     const selectedCards = document.querySelectorAll('.drive-card.selected');
     const drives = Array.from(selectedCards).map(c => c.dataset.drive);
@@ -1334,15 +2007,9 @@ async function startScan() {
       return;
     }
   }
-  
   const excludeText = document.getElementById('excludeDirs').value.trim();
-  const extraExclude = excludeText
-    ? excludeText.split('\n').map(s => s.trim()).filter(s => s)
-    : [];
-
+  const extraExclude = excludeText ? excludeText.split('\n').map(s => s.trim()).filter(s => s) : [];
   closeScanModal();
-
-  // 如果不是恢复模式，清空旧结果
   if (!resume) {
     State.allResults = [];
     State.selectedIds.clear();
@@ -1351,17 +2018,18 @@ async function startScan() {
     renderTable([]);
     updateSelectionBar();
   }
-
   const selectedCards = document.querySelectorAll('.drive-card.selected');
   const drives = Array.from(selectedCards).map(c => c.dataset.drive);
-  
+  const fastModeCheck = document.getElementById('fastModeCheck');
+  const fastMode = fastModeCheck ? fastModeCheck.checked : false;
   const res = await fetch('/api/scan/start', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ 
-      drives: drives.length > 0 ? drives : null, 
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      drives: drives.length > 0 ? drives : null,
       extra_exclude: extraExclude,
-      resume: resume
+      resume: resume,
+      fast_mode: fastMode
     }),
   });
   const data = await res.json();
@@ -1369,12 +2037,9 @@ async function startScan() {
     showToast(data.msg, 'error');
     return;
   }
-
   State.scanning = true;
   setUIScanning(true);
   startSSE();
-
-  // 定时刷新列表
   refreshTimer = setInterval(refreshResults, 3000);
 }
 
@@ -1396,66 +2061,54 @@ async function resumeScan() {
 
 function stopScan() {
   fetch('/api/scan/stop', { method: 'POST' });
-  // 立即更新 UI 为停止状态
   const btnScan = document.getElementById('btnScan');
   const btnPause = document.getElementById('btnPause');
   const btnResume = document.getElementById('btnResume');
   const btnStop = document.getElementById('btnStop');
-  
   btnScan.style.display = '';
   btnPause.style.display = 'none';
   btnResume.style.display = 'none';
   btnStop.style.display = 'none';
-  
   cleanupScan();
 }
 
 function cleanupScan() {
   State.scanning = false;
   setUIScanning(false);
-  if (sseSource) { sseSource.close(); sseSource = null; }
-  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
-  
-  // 手动更新状态显示
-  const dot = document.getElementById('statusDot');
-  const text = document.getElementById('statusText');
-  const progressWrap = document.getElementById('progressWrap');
+  if (sseSource) {
+    sseSource.close();
+    sseSource = null;
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressBarContainer = document.getElementById('progressBarContainer');
   const progressStats = document.getElementById('progressStats');
-  
-  dot.className = 'status-dot';
-  text.textContent = '扫描已停止';
-  progressWrap.style.display = 'none';
+  statusDot.className = 'status-dot';
+  statusText.textContent = '扫描已停止';
+  progressBarContainer.style.display = 'none';
   progressStats.style.display = 'none';
-  
-  // 刷新结果和摘要
   refreshResults();
   loadSummary();
 }
 
-// ═══════════════════════════════════════════════
-// SSE 实时进度
-// ═══════════════════════════════════════════════
 function startSSE() {
   if (sseSource) sseSource.close();
   sseSource = new EventSource('/api/scan/progress');
-
   sseSource.onmessage = (e) => {
     const payload = JSON.parse(e.data);
     const { progress, finished } = payload;
-
     updateProgressUI(progress);
-
     if (finished) {
       cleanupScan();
       refreshResults();
       loadSummary();
-      showToast(
-        `扫描完成！共发现 ${progress.matched_files} 个相关文件`,
-        'success'
-      );
+      showToast(`扫描完成！共发现 ${progress.matched_files} 个相关文件`, 'success');
     }
   };
-
   sseSource.onerror = () => {
     if (State.scanning) {
       cleanupScan();
@@ -1465,578 +2118,386 @@ function startSSE() {
 }
 
 function updateProgressUI(p) {
-  const dot = document.getElementById('statusDot');
-  const text = document.getElementById('statusText');
-  const stats = document.getElementById('progressStats');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressStats = document.getElementById('progressStats');
+  const progressFill = document.getElementById('progressFill');
+  const progressBarContainer = document.getElementById('progressBarContainer');
   const btnScan = document.getElementById('btnScan');
   const btnPause = document.getElementById('btnPause');
   const btnResume = document.getElementById('btnResume');
   const btnStop = document.getElementById('btnStop');
-
-  // 更新按钮状态
   if (p.status === 'running') {
-    dot.className = 'status-dot running';
+    statusDot.className = 'status-dot scanning';
     btnScan.style.display = 'none';
     btnPause.style.display = '';
     btnResume.style.display = 'none';
     btnStop.style.display = '';
-    
-    const path = p.current_path || '';
-    const shortPath = path.length > 50 ? '...' + path.slice(-47) : path;
-    text.textContent = shortPath || '扫描中...';
-    stats.style.display = 'inline';
-    stats.textContent = `已扫 ${p.scanned_files.toLocaleString()} 个文件 | 命中 ${p.matched_files} 个 | ${p.elapsed}s`;
   } else if (p.status === 'paused') {
-    dot.className = 'status-dot';
+    statusDot.className = 'status-dot';
     btnScan.style.display = 'none';
     btnPause.style.display = 'none';
     btnResume.style.display = '';
     btnStop.style.display = '';
-    
-    text.textContent = '扫描已暂停';
-    stats.style.display = 'inline';
-    stats.textContent = `已扫 ${p.scanned_files.toLocaleString()} 个文件 | 命中 ${p.matched_files} 个`;
-  } else if (p.status === 'done') {
-    dot.className = 'status-dot done';
-    btnScan.style.display = '';
-    btnPause.style.display = 'none';
+  }
+  if (p.total_files > 0) {
+    const percent = Math.round((p.scanned_files / p.total_files) * 100);
+    progressFill.style.width = `${percent}%`;
+  }
+  progressBarContainer.style.display = 'block';
+  progressStats.style.display = 'block';
+  const path = p.current_path || '';
+  const shortPath = path.length > 50 ? '...' + path.slice(-47) : path;
+  statusText.textContent = shortPath || '正在扫描...';
+  progressStats.textContent = `${p.scanned_files} / ${p.total_files || '?'}`;
+}
+
+function setUIScanning(isScanning) {
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressBarContainer = document.getElementById('progressBarContainer');
+  const progressStats = document.getElementById('progressStats');
+  const btnScan = document.getElementById('btnScan');
+  const btnPause = document.getElementById('btnPause');
+  const btnResume = document.getElementById('btnResume');
+  const btnStop = document.getElementById('btnStop');
+  if (isScanning) {
+    statusDot.className = 'status-dot scanning';
+    statusText.textContent = '正在扫描...';
+    progressBarContainer.style.display = 'block';
+    progressStats.style.display = 'block';
+    btnScan.style.display = 'none';
+    btnPause.style.display = '';
     btnResume.style.display = 'none';
-    btnStop.style.display = 'none';
-    
-    text.textContent = `扫描完成`;
-    stats.style.display = 'inline';
-    stats.textContent = `共 ${p.scanned_files.toLocaleString()} 个文件，命中 ${p.matched_files} 个，耗时 ${p.elapsed}s`;
-  } else if (p.status === 'stopped' || p.status === 'error') {
-    dot.className = 'status-dot';
-    btnScan.style.display = '';
-    btnPause.style.display = 'none';
-    btnResume.style.display = 'none';
-    btnStop.style.display = 'none';
-    
-    text.textContent = p.status === 'stopped' ? '扫描已停止' : '扫描出错';
-    stats.style.display = 'none';
+    btnStop.style.display = '';
   } else {
-    dot.className = 'status-dot';
+    statusDot.className = 'status-dot';
+    statusText.textContent = '准备就绪';
+    progressBarContainer.style.display = 'none';
+    progressStats.style.display = 'none';
     btnScan.style.display = '';
     btnPause.style.display = 'none';
     btnResume.style.display = 'none';
     btnStop.style.display = 'none';
   }
-  
-  document.getElementById('progressWrap').style.display = (p.status === 'running' || p.status === 'paused') ? '' : 'none';
-  document.getElementById('progressStats').style.display = (p.status === 'running' || p.status === 'paused' || p.status === 'done') ? '' : 'none';
 }
 
-function setUIScanning(scanning) {
-  // 更新规则按钮状态
-  updateRuleButtonsState();
-  // 如果规则管理窗口打开，也需要刷新规则列表
-  const ruleModal = document.getElementById('ruleManagerModal');
-  if (ruleModal && ruleModal.style.display === 'flex') {
-    loadRuleList();
-  }
-}
-
-// ═══════════════════════════════════════════════
-// 分类侧边栏
-// ═══════════════════════════════════════════════
-async function loadSummary() {
-  try {
-    const res = await fetch('/api/scan/summary');
-    const data = await res.json();
-    State.summaryData = data.summary;
-    renderSidebar(data.summary);
-  } catch (e) {}
-}
-
-function renderSidebar(summary) {
-  const list = document.getElementById('sidebarList');
-  const totalCount = summary.reduce((a, b) => a + b.count, 0);
-
-  let html = `
-    <div class="sidebar-item ${State.currentCategory === 'all' ? 'active' : ''}"
-         data-key="all" onclick="filterCategory('all', this)">
-      <span class="icon">📁</span>
-      <span class="label">全部文件</span>
-      <span class="badge" id="badge-all">${totalCount}</span>
-    </div>
-  `;
-
-  const riskOrder = { high: 0, medium: 1, low: 2 };
-  const sorted = [...summary].sort(
-    (a, b) => (riskOrder[a.risk] || 9) - (riskOrder[b.risk] || 9)
-  );
-
-  sorted.forEach(cat => {
-    const isActive = State.currentCategory === cat.key;
-    html += `
-      <div class="sidebar-item ${isActive ? 'active' : ''}"
-           data-key="${cat.key}" onclick="filterCategory('${cat.key}', this)">
-        <div class="risk-dot" style="background:${cat.color}"></div>
-        <span class="icon">${cat.icon}</span>
-        <span class="label">${cat.label}</span>
-        <span class="badge">${cat.count}</span>
-      </div>
-    `;
-  });
-
-  list.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════
-// 文件列表渲染
-// ═══════════════════════════════════════════════
 async function refreshResults() {
   try {
-    const timeRange = document.getElementById('timeRangeFilter').value;
-    const timeStart = document.getElementById('timeStart') ? document.getElementById('timeStart').value : '';
-    const timeEnd = document.getElementById('timeEnd') ? document.getElementById('timeEnd').value : '';
-    
     const res = await fetch('/api/scan/results', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         time_range: State.currentTimeRange,
-        time_start: timeRange === 'custom' ? timeStart : '',
-        time_end: timeRange === 'custom' ? timeEnd : '',
-        category: State.currentCategory !== 'all' ? State.currentCategory : 'all',
+        time_start: document.getElementById('timeStart').value,
+        time_end: document.getElementById('timeEnd').value,
+        category: State.currentCategory,
         personal_only: State.currentPersonalOnly,
         suspected_only: State.currentSuspectedOnly,
         page: State.currentPage,
-        page_size: State.pageSize,
+        page_size: State.pageSize
       }),
     });
     const data = await res.json();
     if (data.success) {
+      const oldPaths = new Set(State.allResults.map(f => f.path));
+      const newPaths = new Set(data.results.map(f => f.path));
+      const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
+      if (removedCount > 0) {
+        showRemovedFilesNotification(removedCount);
+      }
       State.allResults = data.results;
       State.totalCount = data.total;
-      renderTable(data.results);
-      updatePagination(data.total, data.page, data.page_size);
-      loadSummary();
-      
-      // 只在手动刷新时显示删除文件提示
-      if (data.removed_count && isManualRefresh) {
-        showRemovedFilesNotification(data.removed_count);
-      }
-      
-      // 重置手动刷新标志
-      isManualRefresh = false;
-    }
-  } catch (e) {
-    isManualRefresh = false;
-  }
-}
-
-// ═══════════════════════════════════════════════
-// 个人目录管理
-// ═══════════════════════════════════════════════
-
-async function openPersonalDirManager() {
-  document.getElementById('personalDirModal').style.display = 'flex';
-  await loadPersonalDirList();
-}
-
-function closePersonalDirManager() {
-  document.getElementById('personalDirModal').style.display = 'none';
-}
-
-async function loadPersonalDirList() {
-  try {
-    const res = await fetch('/api/personal_dirs');
-    const data = await res.json();
-    if (data.success) {
-      const list = document.getElementById('personalDirList');
-      if (data.dirs.length === 0) {
-        list.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text2); font-size:13px;">暂无个人目录</div>';
+      if (State.totalCount === 0) {
+        document.getElementById('emptyState').style.display = 'flex';
+        document.getElementById('fileTable').style.display = 'none';
+        document.getElementById('paginationBar').style.display = 'none';
       } else {
-        list.innerHTML = data.dirs.map(dir => `
-          <div style="display:flex; align-items:center; gap:8px; padding:8px 12px;
-                      background:var(--bg3); border-radius:var(--radius); margin-bottom:6px;">
-            <span style="flex:1; font-size:12px; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              ${escHtml(dir)}
-            </span>
-            <button class="btn btn-danger btn-sm" onclick="removePersonalDir('${escHtml(dir)}')" style="padding:4px 8px;">
-              ✕
-            </button>
-          </div>
-        `).join('');
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('fileTable').style.display = 'table';
+        document.getElementById('paginationBar').style.display = 'flex';
       }
-    }
-  } catch (e) {}
-}
-
-async function addPersonalDir() {
-  const input = document.getElementById('newPersonalDir');
-  const path = input.value.trim();
-  if (!path) {
-    showToast('请输入目录路径', 'error');
-    return;
-  }
-  
-  try {
-    const res = await fetch('/api/personal_dirs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('添加成功', 'success');
-      input.value = '';
-      await loadPersonalDirList();
-      isManualRefresh = true;
-      await refreshResults();
-    } else {
-      showToast(data.msg || '添加失败', 'error');
+      renderTable(getFilteredResults());
+      updateSidebarCounts();
+      updateSelectionBar();
     }
   } catch (e) {
-    showToast('添加失败', 'error');
+    console.error('刷新结果失败', e);
   }
 }
 
-async function removePersonalDir(path) {
-  try {
-    const res = await fetch('/api/personal_dirs', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('移除成功', 'success');
-      await loadPersonalDirList();
-      isManualRefresh = true;
-      await refreshResults();
-    } else {
-      showToast(data.msg || '移除失败', 'error');
+function getFilteredResults() {
+  let filtered = State.allResults;
+  if (State.currentCategory !== 'all') {
+    filtered = filtered.filter(f => f.category === State.currentCategory);
+  }
+  if (State.currentRisk) {
+    filtered = filtered.filter(f => f.risk === State.currentRisk);
+  }
+  if (State.currentKeyword) {
+    const keyword = State.currentKeyword.toLowerCase();
+    filtered = filtered.filter(f => 
+      f.name.toLowerCase().includes(keyword) || 
+      f.path.toLowerCase().includes(keyword)
+    );
+  }
+  if (State.currentTimeRange === '1month') {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= monthAgo);
+  } else if (State.currentTimeRange === '3months') {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= threeMonthsAgo);
+  } else if (State.currentTimeRange === '1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= yearAgo);
+  } else if (State.currentTimeRange === 'older1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) < yearAgo);
+  } else if (State.currentTimeRange === 'custom') {
+    const start = document.getElementById('timeStart').value;
+    const end = document.getElementById('timeEnd').value;
+    if (start) {
+      const startDate = new Date(start);
+      filtered = filtered.filter(f => new Date(f.modified_time) >= startDate);
     }
-  } catch (e) {
-    showToast('移除失败', 'error');
-  }
-}
-
-async function clearAllPersonalDirs() {
-  try {
-    const res = await fetch('/api/personal_dirs/clear', { method: 'POST' });
-    const data = await res.json();
-    if (data.success) {
-      showToast(data.msg, 'success');
-      await loadPersonalDirList();
-      isManualRefresh = true;
-      await refreshResults();
+    if (end) {
+      const endDate = new Date(end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(f => new Date(f.modified_time) <= endDate);
     }
-  } catch (e) {
-    showToast('清空失败', 'error');
   }
+  if (State.currentPersonalOnly) {
+    filtered = filtered.filter(f => f.is_personal_dir === true);
+  }
+  if (State.currentSuspectedOnly) {
+    filtered = filtered.filter(f => f.is_personal === true && f.is_personal_dir !== true);
+  }
+  return filtered;
 }
 
-function browsePersonalDir() {
-  showToast('请手动输入目录路径，或先在资源管理器中复制路径', 'info');
-}
-
-function renderTable(items) {
-  const table = document.getElementById('fileTable');
-  const tbody  = document.getElementById('fileTableBody');
-  const empty  = document.getElementById('emptyState');
-
-  if (items.length === 0 && !State.scanning) {
-    table.style.display = 'none';
-    empty.style.display = 'flex';
-    document.getElementById('paginationBar').style.display = 'none';
-    return;
-  }
-
-  empty.style.display = 'none';
-  table.style.display = 'table';
-
-  const rows = items.map(item => {
-    const checked   = State.selectedIds.has(item.id) ? 'checked' : '';
-    const isActive  = State.activeRowId === item.id ? 'preview-active' : '';
-    const selected  = State.selectedIds.has(item.id) ? 'selected' : '';
-    const riskClass = `risk-${item.risk}`;
-    const riskLabel = { high: '高风险', medium: '中风险', low: '低风险' }[item.risk] || '';
-
-    // ── 目录条目──
-    if (item.is_dir) {
-      let dirBadge = '';
-      if (item.category_key === 'cache') {
-        dirBadge = `<span class="dir-badge known-badge" style="background:rgba(250,173,20,0.2);color:#faad14;">
-                      🗑️ ${escHtml(item.software_name || '缓存')}
-                    </span>`;
-      } else if (item.category_key === 'user_dir') {
-        dirBadge = `<span class="dir-badge known-badge" style="background:rgba(24,144,255,0.2);color:#1890ff;">
-                      📁 自建目录
-                    </span>`;
-      } else {
-        // 软件目录
-        dirBadge = item.is_known
-          ? `<span class="dir-badge known-badge">💾 ${escHtml(item.software_name)}</span>`
-          : `<span class="dir-badge unknown-badge">❓ 未知软件</span>`;
+function renderTable(results) {
+  const tbody = document.getElementById('fileTableBody');
+  const pageInfo = document.getElementById('pageInfo');
+  const start = (State.currentPage - 1) * State.pageSize;
+  const end = start + State.pageSize;
+  const paginated = results.slice(start, end);
+  tbody.innerHTML = '';
+  paginated.forEach((file, index) => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = file.id;
+    tr.dataset.path = file.path;
+    tr.onclick = (e) => {
+      if (!e.target.closest('input[type="checkbox"]') && !e.target.closest('.file-actions')) {
+        togglePreview(file);
       }
-
-      return `
-        <tr class="${isActive} ${selected} dir-row"
-            data-id="${item.id}"
-            data-path="${escHtml(item.path)}"
-            data-isdir="1"
-            onclick="handleRowClick(event, '${item.id}')">
-          <td onclick="event.stopPropagation()">
-            <input type="checkbox" ${checked}
-                  onchange="toggleSelect('${item.id}', this.checked)">
-          </td>
-          <td class="file-name">
-            <div class="name" title="${escHtml(item.path)}">
-              ${dirBadge}
-              ${escHtml(item.name)}
-            </div>
-            <div class="path">${escHtml(item.path)}</div>
-          </td>
-          <td><span class="cat-badge">${item.category_icon} ${item.category_label}</span></td>
-          <td><span class="risk-badge ${riskClass}">${riskLabel}</span></td>
-          <td><span style="color:var(--text2)">目录</span></td>
-          <td style="color:var(--text2)">${item.mtime}</td>
-          <td>
-            <button class="btn btn-ghost btn-sm"
-                    onclick="event.stopPropagation(); openInExplorer('${item.id}')"
-                    title="在资源管理器中打开">📂</button>
-          </td>
-        </tr>`;
+    };
+    tr.innerHTML = `
+      <td>
+        <input type="checkbox" class="file-check" data-id="${file.id}" ${State.selectedIds.has(file.id) ? 'checked' : ''} onchange="toggleSelect('${file.id}')" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue); appearance: none; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); transition: all var(--transition-normal); position: relative; box-shadow: var(--shadow-sm);">
+        <style>
+          .file-check:hover {
+            border-color: var(--accent-blue);
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+          }
+          .file-check:checked {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-color: var(--accent-blue);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+          }
+          .file-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+          }
+        </style>
+      </td>
+      <td>
+        <div class="file-cell">
+          <div class="file-name">${file.name}</div>
+          <div class="file-path">${file.path}</div>
+        </div>
+      </td>
+      <td>
+        <span class="badge">
+          ${file.icon || '📄'}
+          ${file.category}
+        </span>
+      </td>
+      <td>
+        <span class="badge badge-risk-${file.risk}">
+          ${file.risk === 'high' ? '🔴' : file.risk === 'medium' ? '🟡' : '🟢'}
+          ${file.risk === 'high' ? '高' : file.risk === 'medium' ? '中' : '低'}
+        </span>
+      </td>
+      <td>${file.size_human}</td>
+      <td>${file.modified_time}</td>
+      <td>
+        <div class="file-actions">
+          <button class="btn btn-sm" onclick="previewFile('${file.id}')" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
+            👁️
+          </button>
+          <button class="btn btn-sm" onclick="deleteFile('${file.path}', '${file.id}', 'trash')" style="background: var(--accent-yellow-light); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 6px 10px;">
+            📦
+          </button>
+          <button class="btn btn-sm" onclick="deleteFile('${file.path}', '${file.id}', 'permanent')" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+            🗑️
+          </button>
+        </div>
+      </td>
+    `;
+    if (State.activeRowId === file.id) {
+      tr.classList.add('preview-active');
     }
-
-    // ── 普通文件条目 ──
-    let badges = '';
-    if (item.is_personal) {
-      badges += '<span style="display:inline-block; font-size:10px; padding:1px 5px; border-radius:3px; background:rgba(24,144,255,0.2); color:#1890ff; margin-right:4px; vertical-align:middle;">🏠</span>';
+    if (State.selectedIds.has(file.id)) {
+      tr.classList.add('selected');
     }
-    if (item.is_suspected && !item.is_personal) {
-      const reason = item.suspected_reason ? ` (${item.suspected_reason})` : '';
-      const conf = item.suspected_confidence ? ` [${Math.round(item.suspected_confidence * 100)}%]` : '';
-      badges += `<span style="display:inline-block; font-size:10px; padding:1px 5px; border-radius:3px; background:rgba(250,173,20,0.2); color:#faad14; margin-right:4px; vertical-align:middle;" title="疑似个人内容${reason}${conf}">❓</span>`;
-      
-      if (item.suspected_confidence) {
-        const confPct = Math.round(item.suspected_confidence * 100);
-        const confColor = confPct >= 70 ? 'var(--green)' : confPct >= 40 ? 'var(--yellow)' : 'var(--text2)';
-        badges += `<span style="font-size:10px; color:${confColor}; margin-right:6px; vertical-align:middle;">${confPct}%</span>`;
-      }
-    }
-    return `
-      <tr class="${isActive} ${selected}"
-          data-id="${item.id}"
-          data-path="${escHtml(item.path)}"
-          onclick="handleRowClick(event, '${item.id}')">
-        <td onclick="event.stopPropagation()">
-          <input type="checkbox" ${checked}
-                 onchange="toggleSelect('${item.id}', this.checked)">
-        </td>
-        <td class="file-name">
-          <div class="name" title="${escHtml(item.path)}">${badges}${escHtml(item.name)}</div>
-          <div class="path">${escHtml(item.dir)}</div>
-        </td>
-        <td><span class="cat-badge">${item.category_icon} ${item.category_label}</span></td>
-        <td><span class="risk-badge ${riskClass}">${riskLabel}</span></td>
-        <td>${item.size_human}</td>
-        <td style="color:var(--text2)">${item.mtime}</td>
-        <td>
-          ${item.is_suspected && !item.is_personal ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); quickMarkPersonal('${escHtml(item.dir)}')" title="一键标记此目录为个人目录" style="margin-right:4px;">🏠</button>` : ''}
-          <button class="btn btn-ghost btn-sm"
-                  onclick="event.stopPropagation(); openInExplorer('${item.id}')"
-                  title="在资源管理器中显示">📂</button>
-        </td>
-      </tr>`;
-  }).join('');
-
-  tbody.innerHTML = rows;
-
-  // 全选框状态
-  const checkAll = document.getElementById('checkAll');
-  if (items.length > 0 && items.every(i => State.selectedIds.has(i.id))) {
-    checkAll.checked = true; checkAll.indeterminate = false;
-  } else if (items.some(i => State.selectedIds.has(i.id))) {
-    checkAll.indeterminate = true; checkAll.checked = false;
-  } else {
-    checkAll.checked = false; checkAll.indeterminate = false;
-  }
-}
-
-function updatePagination(total, page, pageSize) {
-  const bar = document.getElementById('paginationBar');
-  if (total === 0) { bar.style.display = 'none'; return; }
-  bar.style.display = 'flex';
-
-  const totalPages = Math.ceil(total / pageSize);
-  document.getElementById('pageInfo').textContent =
-    `共 ${total} 个文件，第 ${page}/${totalPages} 页`;
-  document.getElementById('btnPrev').disabled = page <= 1;
-  document.getElementById('btnNext').disabled = page >= totalPages;
+    tbody.appendChild(tr);
+  });
+  pageInfo.textContent = `第 ${State.currentPage} 页，共 ${Math.ceil(results.length / State.pageSize)} 页，共 ${results.length} 个文件`;
+  document.getElementById('btnPrev').disabled = State.currentPage === 1;
+  document.getElementById('btnNext').disabled = end >= results.length;
 }
 
 function changePage(delta) {
-  const totalPages = Math.ceil(State.totalCount / State.pageSize);
-  const newPage = State.currentPage + delta;
-  if (newPage < 1 || newPage > totalPages) return;
-  State.currentPage = newPage;
-  isManualRefresh = true;
-  refreshResults();
+  State.currentPage += delta;
+  if (State.currentPage < 1) State.currentPage = 1;
+  renderTable(getFilteredResults());
 }
 
-// ═══════════════════════════════════════════════
-// 过滤 & 搜索
-// ═══════════════════════════════════════════════
-function filterCategory(key, el) {
-  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-  el.classList.add('active');
-  State.currentCategory = key;
+function filterCategory(category, element) {
+  State.currentCategory = category;
   State.currentPage = 1;
-  isManualRefresh = true;
-  refreshResults();
+  document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+  element.classList.add('active');
+  renderTable(getFilteredResults());
+}
+
+function applyFilters() {
+  State.currentRisk = document.getElementById('riskFilter').value;
+  State.currentKeyword = document.getElementById('searchInput').value;
+  State.currentTimeRange = document.getElementById('timeRangeFilter').value;
+  State.currentPersonalOnly = document.getElementById('personalOnly').checked;
+  State.currentSuspectedOnly = document.getElementById('suspectedOnly').checked;
+  State.currentPage = 1;
+  renderTable(getFilteredResults());
+}
+
+function debounceSearch(value) {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    State.currentKeyword = value;
+    State.currentPage = 1;
+    renderTable(getFilteredResults());
+  }, 300);
 }
 
 function toggleCustomDateInputs() {
   const timeRange = document.getElementById('timeRangeFilter').value;
   const customInputs = document.getElementById('customDateInputs');
-  if (timeRange === 'custom') {
-    customInputs.style.display = 'flex';
-  } else {
-    customInputs.style.display = 'none';
-  }
+  customInputs.style.display = timeRange === 'custom' ? 'flex' : 'none';
 }
 
-function applyFilters() {
-  State.currentRisk = document.getElementById('riskFilter').value;
-  State.currentTimeRange = document.getElementById('timeRangeFilter').value;
-  State.currentPersonalOnly = document.getElementById('personalOnly').checked;
-  State.currentSuspectedOnly = document.getElementById('suspectedOnly').checked;
-  State.currentPage = 1;
-  isManualRefresh = true;
-  refreshResults();
-}
-
-function debounceSearch(val) {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    State.currentKeyword = val;
-    State.currentPage = 1;
-    isManualRefresh = true;
-    refreshResults();
-  }, 400);
-}
-
-// ═══════════════════════════════════════════════
-// 选择操作
-// ═══════════════════════════════════════════════
-function handleRowClick(e, id) {
-  // 点击复选框不触发预览
-  if (e.target.type === 'checkbox') return;
-  const item = State.allResults.find(r => r.id === id);
-  showPreview(id, item ? item.path : '');
-}
-
-function toggleSelect(id, checked) {
-  if (checked) {
-    State.selectedIds.add(id);
-  } else {
+function toggleSelect(id) {
+  if (State.selectedIds.has(id)) {
     State.selectedIds.delete(id);
+  } else {
+    State.selectedIds.add(id);
   }
   updateSelectionBar();
-  refreshTableSelection();
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  if (row) {
+    row.classList.toggle('selected');
+  }
 }
 
 function toggleAll(checkbox) {
-  State.allResults.forEach(item => {
-    if (checkbox.checked) {
-      State.selectedIds.add(item.id);
-    } else {
-      State.selectedIds.delete(item.id);
-    }
+  const checked = checkbox.checked;
+  State.selectedIds.clear();
+  if (checked) {
+    const filtered = getFilteredResults();
+    filtered.forEach(file => State.selectedIds.add(file.id));
+  }
+  document.querySelectorAll('.file-check').forEach(check => check.checked = checked);
+  document.querySelectorAll('tr[data-id]').forEach(row => {
+    row.classList.toggle('selected', checked);
   });
   updateSelectionBar();
-  refreshTableSelection();
 }
 
 function toggleSelectAll() {
-  const allSelected = State.allResults.every(i => State.selectedIds.has(i.id));
-  State.allResults.forEach(item => {
-    if (allSelected) {
-      State.selectedIds.delete(item.id);
-    } else {
-      State.selectedIds.add(item.id);
-    }
-  });
-  updateSelectionBar();
-  renderTable(State.allResults);
-}
-
-function clearSelection() {
-  State.selectedIds.clear();
-  updateSelectionBar();
-  renderTable(State.allResults);
-}
-
-function refreshTableSelection() {
-  document.querySelectorAll('#fileTableBody tr').forEach(tr => {
-    const id = tr.dataset.id;
-    const cb = tr.querySelector('input[type=checkbox]');
-    if (State.selectedIds.has(id)) {
-      tr.classList.add('selected');
-      if (cb) cb.checked = true;
-    } else {
-      tr.classList.remove('selected');
-      if (cb) cb.checked = false;
-    }
-  });
+  const checkbox = document.getElementById('checkAll');
+  checkbox.checked = !checkbox.checked;
+  toggleAll(checkbox);
 }
 
 function updateSelectionBar() {
   const bar = document.getElementById('selectionBar');
-  const count = State.selectedIds.size;
-  if (count > 0) {
+  const count = document.getElementById('selCount');
+  const selectedCount = State.selectedIds.size;
+  if (selectedCount > 0) {
     bar.classList.add('show');
-    document.getElementById('selCount').textContent = `已选 ${count} 个文件`;
+    count.textContent = `已选择 ${selectedCount} 个文件`;
   } else {
     bar.classList.remove('show');
   }
 }
 
-// ═══════════════════════════════════════════════
-// 删除操作
-// ═══════════════════════════════════════════════
-function deleteSelected(type) {
-  const ids = Array.from(State.selectedIds);
-  if (ids.length === 0) return;
-
-  const selectedItems = State.allResults.filter(r => ids.includes(r.id));
-  const paths = selectedItems.map(r => r.path);
-
-  State.pendingDelete = { type, paths, ids };
-  showConfirmModal(type, selectedItems);
+function clearSelection() {
+  State.selectedIds.clear();
+  document.getElementById('checkAll').checked = false;
+  document.querySelectorAll('.file-check').forEach(check => check.checked = false);
+  document.querySelectorAll('tr[data-id]').forEach(row => row.classList.remove('selected'));
+  updateSelectionBar();
 }
 
-function showConfirmModal(type, items) {
+function deleteFile(path, id, type) {
+  State.pendingDelete = { type, paths: [path], ids: [id] };
+  openConfirmModal(type);
+}
+
+function deleteSelected(type) {
+  const selected = getFilteredResults().filter(f => State.selectedIds.has(f.id));
+  if (selected.length === 0) return;
+  State.pendingDelete = {
+    type,
+    paths: selected.map(f => f.path),
+    ids: selected.map(f => f.id)
+  };
+  openConfirmModal(type);
+}
+
+function openConfirmModal(type) {
   const modal = document.getElementById('confirmModal');
-  const icon = document.getElementById('confirmIcon');
   const title = document.getElementById('confirmTitle');
   const desc = document.getElementById('confirmDesc');
+  const icon = document.getElementById('confirmIcon');
   const fileList = document.getElementById('confirmFileList');
-  const btn = document.getElementById('confirmBtn');
-
+  const confirmBtn = document.getElementById('confirmBtn');
   if (type === 'trash') {
+    title.textContent = '确认移至回收站';
+    desc.textContent = `确定要将 ${State.pendingDelete.paths.length} 个文件移至回收站吗？`;
     icon.textContent = '📦';
-    title.textContent = '移入回收站';
-    desc.textContent = `即将把 ${items.length} 个文件移入回收站，可以从回收站恢复`;
-    btn.className = 'btn btn-warn';
-    btn.textContent = '确认移入回收站';
+    confirmBtn.style.background = 'linear-gradient(135deg, var(--accent-yellow) 0%, #d97706 100%)';
   } else {
+    title.textContent = '确认永久删除';
+    desc.textContent = `确定要永久删除 ${State.pendingDelete.paths.length} 个文件吗？此操作不可恢复！`;
     icon.textContent = '⚠️';
-    title.textContent = '永久删除确认';
-    desc.textContent = `即将永久删除 ${items.length} 个文件，此操作不可恢复！`;
-    btn.className = 'btn btn-danger';
-    btn.textContent = '确认永久删除';
+    confirmBtn.style.background = 'linear-gradient(135deg, var(--accent-red) 0%, #dc2626 100%)';
   }
-
-  fileList.innerHTML = items.slice(0, 20).map(i =>
-    `<div style="margin-bottom:3px">📄 ${escHtml(i.name)}</div>`
-  ).join('') + (items.length > 20 ? `<div style="color:var(--text2)">...还有 ${items.length - 20} 个文件</div>` : '');
-
+  fileList.innerHTML = State.pendingDelete.paths.slice(0, 5).map(p => `<div style="padding: 4px 0; border-bottom: 1px solid var(--border);">${p}</div>`).join('');
+  if (State.pendingDelete.paths.length > 5) {
+    fileList.innerHTML += `<div style="padding: 8px 0; color: var(--text-muted); font-style: italic;">... 等 ${State.pendingDelete.paths.length} 个文件</div>`;
+  }
   modal.style.display = 'flex';
 }
 
@@ -2048,932 +2509,770 @@ function closeConfirm() {
 async function executeDelete() {
   const { type, paths, ids } = State.pendingDelete;
   closeConfirm();
-
   try {
-    let res, data;
-    if (type === 'trash') {
-      res = await fetch('/api/file/delete/trash', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ paths }),
-      });
-    } else {
-      res = await fetch('/api/file/delete/permanent', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ paths, confirm: true }),
-      });
-    }
-    data = await res.json();
-
+    const endpoint = type === 'trash' ? '/api/file/delete/trash' : '/api/file/delete/permanent';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths, confirm: type === 'permanent' }),
+    });
+    const data = await res.json();
     if (data.success) {
-      const msg = type === 'trash'
-        ? `已移入回收站 ${data.success_count} 个文件`
-        : `已永久删除 ${data.success_count} 个文件`;
-      showToast(msg + (data.fail_count > 0 ? `，${data.fail_count} 个失败` : ''), 'success');
-
-      // 从选中集合移除
+      showToast(`成功 ${type === 'trash' ? '移至回收站' : '永久删除'} ${paths.length} 个文件`, 'success');
       ids.forEach(id => State.selectedIds.delete(id));
+      await refreshResults();
       updateSelectionBar();
-      isManualRefresh = true;
-      refreshResults();
     } else {
-      showToast(data.msg || '操作失败', 'error');
+      showToast(data.msg, 'error');
     }
   } catch (e) {
-    showToast('操作失败：' + e.message, 'error');
+    showToast('操作失败', 'error');
   }
 }
 
-// ═══════════════════════════════════════════════
-// 文件预览
-// ═══════════════════════════════════════════════
-async function showPreview(id, path) {
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+    <span>${message}</span>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function togglePreview(file) {
+  State.activeRowId = file.id;
   const panel = document.getElementById('previewPanel');
-  if (panel.classList.contains('collapsed')) {
-    panel.classList.remove('collapsed');
-    document.getElementById('previewToggleIcon').textContent = '▼';
-    State.previewOpen = true;
-  }
-
-  State.activeRowId = id;
-  document.querySelectorAll('#fileTableBody tr').forEach(tr => {
-    tr.classList.toggle('preview-active', tr.dataset.id === id);
-  });
-
-  const item = State.allResults.find(r => r.id === id);
-  // 优先使用 State.allResults 中的路径（原始 JSON 数据，未经 JS 字符串传参破坏）
-  const filePath = (item && item.path) ? item.path : path;
+  const title = document.getElementById('previewTitle');
+  const meta = document.getElementById('previewMeta');
   const body = document.getElementById('previewBody');
+  const toggleIcon = document.getElementById('previewToggleIcon');
+  title.innerHTML = `
+    <span>${file.icon || '📄'}</span>
+    <span>${file.name}</span>
+  `;
+  meta.innerHTML = `
+    <span>大小: ${file.size_human}</span>
+    <span>修改时间: ${file.modified_time}</span>
+    <span>分类: ${file.category}</span>
+  `;
+  body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">加载中...</div></div>';
+  panel.classList.remove('collapsed');
+  toggleIcon.textContent = '▲';
+  State.previewOpen = true;
+  previewFile(file.id);
+  document.querySelectorAll('tr[data-id]').forEach(row => {
+    row.classList.toggle('preview-active', row.dataset.id === file.id);
+  });
+}
 
-  // ── 目录条目：展示目录信息而非文件内容 ──
-    if (item && item.is_dir) {
-      let dirIcon = '💾';
-      let dirType = '软件目录';
-      let dirTypeColor = '#722ed1';
-      let infoLines = [];
-
-      if (item.category_key === 'cache') {
-        dirIcon = '🗑️';
-        dirType = '应用缓存';
-        dirTypeColor = '#faad14';
-        document.getElementById('previewTitle').textContent =
-          `🗑️ ${item.name}`;
-        document.getElementById('previewMeta').innerHTML = `
-          <span>修改: <b>${item.mtime}</b></span>
-          <span style="color:${dirTypeColor}">🗑️ 应用缓存</span>
-        `;
-        infoLines = [
-          `缓存类型：${item.software_name || '未知'}`,
-          `目录路径：${item.path}`,
-          `修改时间：${item.mtime}`,
-          ``,
-          `💡 此目录为应用缓存，已跳过内部文件扫描`,
-          `   缓存可以安全删除，删除后可能需要重新下载`,
-        ];
-      } else if (item.category_key === 'user_dir') {
-        dirIcon = '📁';
-        dirType = '自建目录';
-        dirTypeColor = '#1890ff';
-        document.getElementById('previewTitle').textContent =
-          `📁 ${item.name}`;
-        document.getElementById('previewMeta').innerHTML = `
-          <span>修改: <b>${item.mtime}</b></span>
-          <span style="color:${dirTypeColor}">📁 自建目录</span>
-        `;
-        infoLines = [
-          `目录名称：${item.name}`,
-          `目录路径：${item.path}`,
-          `修改时间：${item.mtime}`,
-          ``,
-          `💡 此目录为用户自建目录，建议检查后决定是否删除`,
-        ];
-      } else {
-        document.getElementById('previewTitle').textContent =
-          `💾 ${item.name}`;
-        document.getElementById('previewMeta').innerHTML = `
-          <span>修改: <b>${item.mtime}</b></span>
-          <span style="color:var(--purple)">💾 软件目录</span>
-          ${item.is_known
-            ? `<span style="color:var(--green)">✅ 已识别</span>`
-            : `<span style="color:var(--text2)">❓ 未知软件</span>`
-          }
-        `;
-        infoLines = [
-          item.is_known
-            ? `软件名称：${item.software_name}`
-            : `目录名称：${item.dir_name}（未能识别软件名）`,
-          `目录路径：${item.path}`,
-          `修改时间：${item.mtime}`,
-          ``,
-          `💡 此目录为软件数据目录，已跳过内部文件扫描`,
-          `   可点击 📂 在资源管理器中查看目录内容`,
-          `   确认不需要后可整体删除或移入回收站`,
-        ];
-      }
-
-      body.innerHTML = `
-        <div style="padding:8px 0;">
-          <div style="margin-bottom:14px; display:flex; align-items:center; gap:10px;">
-            <span style="font-size:36px;">${dirIcon}</span>
-            <div>
-              <div style="font-size:14px; font-weight:700;">${escHtml(item.name)}</div>
-              <div style="margin-top:4px;">
-                ${item.category_key === 'cache'
-                  ? `<span style="background:rgba(250,173,20,0.15);color:#faad14;
-                                padding:2px 8px;border-radius:4px;font-size:11px;">
-                      🗑️ 应用缓存
-                    </span>`
-                  : item.category_key === 'user_dir'
-                  ? `<span style="background:rgba(24,144,255,0.15);color:#1890ff;
-                                padding:2px 8px;border-radius:4px;font-size:11px;">
-                      📁 自建目录
-                    </span>`
-                  : item.is_known
-                  ? `<span style="background:rgba(114,46,209,0.15);color:#b37feb;
-                                padding:2px 8px;border-radius:4px;font-size:11px;">
-                      ✅ 已识别：${escHtml(item.software_name)}
-                    </span>`
-                  : `<span style="background:rgba(255,255,255,0.06);color:var(--text2);
-                                padding:2px 8px;border-radius:4px;font-size:11px;">
-                      ❓ 未知软件目录
-                    </span>`
-                }
-              </div>
-            </div>
-          </div>
-          <pre style="font-size:12px;line-height:2;color:var(--text2);">${
-            infoLines.map(l => escHtml(l)).join('\n')
-          }</pre>
-        </div>`;
-      return;
-    }
-
-  // ── 普通文件：原有逻辑 ──
-  if (item) {
-    document.getElementById('previewTitle').textContent =
-      `${item.category_icon} ${item.name}`;
-    document.getElementById('previewMeta').innerHTML = `
-      <span>大小: <b>${item.size_human}</b></span>
-      <span>修改: <b>${item.mtime}</b></span>
-      <span>类型: <b>${item.ext || '未知'}</b></span>
-    `;
-  }
-
-  body.innerHTML = '<div class="preview-loading">⏳ 加载中...</div>';
-
+async function previewFile(id) {
   try {
+    const file = getFilteredResults().find(f => f.id === id);
+    if (!file) {
+      throw new Error('文件不存在');
+    }
     const res = await fetch('/api/file/preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: filePath }),
+      body: JSON.stringify({ path: file.path }),
     });
     const data = await res.json();
-
+    const body = document.getElementById('previewBody');
     if (data.type === 'text') {
-      const truncNote = data.truncated
-        ? `<div style="color:var(--yellow);font-size:11px;margin-bottom:8px;">
-             ⚠️ 文件较大，仅显示前 50KB
-           </div>`
-        : '';
-      body.innerHTML = truncNote + `<pre>${escHtml(data.content)}</pre>`;
+      body.innerHTML = `<div class="preview-content"><pre>${escapeHtml(data.content)}</pre></div>`;
     } else if (data.type === 'image') {
-      body.innerHTML =
-        `<img src="data:${data.mime};base64,${data.content}" alt="预览图片">`;
+      body.innerHTML = `<div class="preview-content"><img src="/api/file/serve?path=${encodeURIComponent(file.path)}" alt="${file.name}"></div>`;
     } else if (data.type === 'video') {
-      const serveUrl = `/api/file/serve?path=${encodeURIComponent(data.path)}`;
-      body.innerHTML = `
-        <video controls style="max-width:100%; max-height:100%; display:block; margin:auto;">
-          <source src="${serveUrl}" type="${data.mime}">
-          您的浏览器不支持视频播放
-        </video>
-      `;
+      body.innerHTML = `<div class="preview-content"><video controls style="width: 100%; max-height: 300px; border-radius: var(--radius-md);"><source src="/api/file/serve?path=${encodeURIComponent(file.path)}" type="${data.mime}">您的浏览器不支持视频播放</video></div>`;
+    } else if (data.type === 'error') {
+      body.innerHTML = `<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">${data.content}</div></div>`;
     } else {
-      body.innerHTML =
-        `<pre style="color:var(--text2)">${escHtml(data.content)}</pre>`;
+      body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">无法预览此文件</div></div>';
     }
   } catch (e) {
-    body.innerHTML =
-      `<div class="preview-loading" style="color:var(--red)">❌ 预览失败</div>`;
+    const body = document.getElementById('previewBody');
+    body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">预览失败</div></div>';
   }
+}
+
+function getFilteredResults() {
+  let filtered = State.allResults;
+  if (State.currentCategory !== 'all') {
+    filtered = filtered.filter(f => f.category === State.currentCategory);
+  }
+  if (State.currentRisk) {
+    filtered = filtered.filter(f => f.risk === State.currentRisk);
+  }
+  if (State.currentKeyword) {
+    const keyword = State.currentKeyword.toLowerCase();
+    filtered = filtered.filter(f => 
+      f.name.toLowerCase().includes(keyword) || 
+      f.path.toLowerCase().includes(keyword)
+    );
+  }
+  if (State.currentTimeRange === '1month') {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= monthAgo);
+  } else if (State.currentTimeRange === '3months') {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= threeMonthsAgo);
+  } else if (State.currentTimeRange === '1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= yearAgo);
+  } else if (State.currentTimeRange === 'older1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) < yearAgo);
+  } else if (State.currentTimeRange === 'custom') {
+    const start = document.getElementById('timeStart').value;
+    const end = document.getElementById('timeEnd').value;
+    if (start) {
+      const startDate = new Date(start);
+      filtered = filtered.filter(f => new Date(f.modified_time) >= startDate);
+    }
+    if (end) {
+      const endDate = new Date(end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(f => new Date(f.modified_time) <= endDate);
+    }
+  }
+  if (State.currentPersonalOnly) {
+    filtered = filtered.filter(f => f.is_personal_dir === true);
+  }
+  if (State.currentSuspectedOnly) {
+    filtered = filtered.filter(f => f.is_personal === true && f.is_personal_dir !== true);
+  }
+  return filtered;
 }
 
 function togglePreview() {
   const panel = document.getElementById('previewPanel');
-  const icon = document.getElementById('previewToggleIcon');
-  panel.classList.toggle('collapsed');
-  State.previewOpen = !panel.classList.contains('collapsed');
-  icon.textContent = State.previewOpen ? '▼' : '▲';
-}
-
-// ═══════════════════════════════════════════════
-// 规则管理器
-// ═══════════════════════════════════════════════
-
-let RuleEditor = {
-  mode: 'create',   // 'create' | 'edit'
-  editId: null,
-  conditionCounter: 0,
-};
-
-function updateRuleButtonsState() {
-  const isScanning = State.scanning;
-  const addBtn = document.getElementById('addRuleBtn');
-  const clearBtn = document.getElementById('clearRulesBtn');
-  
-  if (addBtn) {
-    addBtn.disabled = isScanning;
-    addBtn.style.opacity = isScanning ? '0.5' : '1';
-    addBtn.style.cursor = isScanning ? 'not-allowed' : 'pointer';
-  }
-  if (clearBtn) {
-    clearBtn.disabled = isScanning;
-    clearBtn.style.opacity = isScanning ? '0.5' : '1';
-    clearBtn.style.cursor = isScanning ? 'not-allowed' : 'pointer';
+  const toggleIcon = document.getElementById('previewToggleIcon');
+  if (State.previewOpen) {
+    panel.classList.add('collapsed');
+    toggleIcon.textContent = '▼';
+    State.previewOpen = false;
+  } else {
+    panel.classList.remove('collapsed');
+    toggleIcon.textContent = '▲';
+    State.previewOpen = true;
   }
 }
 
-// ── 打开/关闭规则管理弹窗 ──
-async function openRuleManager() {
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function loadSummary() {
+  try {
+    const res = await fetch('/api/scan/summary');
+    const data = await res.json();
+    State.summaryData = data.summary;
+    updateSidebarCounts();
+  } catch (e) {
+    console.error('加载摘要失败', e);
+  }
+}
+
+function updateSidebarCounts() {
+  const sidebarList = document.getElementById('sidebarList');
+  const categories = {};
+  State.allResults.forEach(file => {
+    if (!categories[file.category]) {
+      categories[file.category] = 0;
+    }
+    categories[file.category]++;
+  });
+  let html = `
+    <div class="sidebar-item ${State.currentCategory === 'all' ? 'active' : ''}" data-key="all" onclick="filterCategory('all', this)">
+      <div class="sidebar-icon">📁</div>
+      <div class="sidebar-label">全部文件</div>
+      <div class="sidebar-badge" id="badge-all">${State.allResults.length}</div>
+    </div>
+  `;
+  Object.entries(categories).forEach(([category, count]) => {
+    const icon = getCategoryIcon(category);
+    html += `
+      <div class="sidebar-item ${State.currentCategory === category ? 'active' : ''}" data-key="${category}" onclick="filterCategory('${category}', this)">
+        <div class="sidebar-icon">${icon}</div>
+        <div class="sidebar-label">${category}</div>
+        <div class="sidebar-badge">${count}</div>
+      </div>
+    `;
+  });
+  sidebarList.innerHTML = html;
+}
+
+function getCategoryIcon(category) {
+  const icons = {
+    '文档': '📄',
+    '图片': '🖼️',
+    '视频': '🎥',
+    '音频': '🎵',
+    '压缩包': '📦',
+    '可执行文件': '⚙️',
+    '系统文件': '💻',
+    '个人目录文件': '🏠',
+    '疑似个人文件': '❓'
+  };
+  return icons[category] || '📁';
+}
+
+function openRuleManager() {
   document.getElementById('ruleManagerModal').style.display = 'flex';
-  updateRuleButtonsState();
-  await loadRuleList();
+  loadRules();
 }
 
 function closeRuleManager() {
   document.getElementById('ruleManagerModal').style.display = 'none';
 }
 
-// ── 加载规则列表 ──
-async function loadRuleList() {
+async function loadRules() {
   try {
     const res = await fetch('/api/custom_rules');
     const data = await res.json();
-    renderRuleList(data.rules);
-  } catch (e) {
-    showToast('加载规则失败', 'error');
-  }
-}
-
-function renderRuleList(rules) {
-  document.getElementById('ruleCount').textContent = rules.length;
-  const body = document.getElementById('ruleListBody');
-
-  if (rules.length === 0) {
-    body.innerHTML = `
-      <div style="text-align:center; padding:40px; color:var(--text2);">
-        <div style="font-size:36px; margin-bottom:12px;">📭</div>
-        <div>还没有自定义规则</div>
-        <div style="margin-top:8px; font-size:12px;">点击「新增规则」创建第一条规则</div>
-      </div>`;
-    return;
-  }
-
-  const riskLabel = { high: '🔴 高风险', medium: '🟡 中风险', low: '🟢 低风险' };
-  const logicLabel = { OR: 'OR 任意命中', AND: 'AND 全部命中' };
-
-  const isScanning = State.scanning;
-  const disabledAttr = isScanning ? 'disabled' : '';
-  const disabledStyle = isScanning ? 'opacity:0.5; cursor:not-allowed;' : '';
-  const scanningNote = isScanning ? ' (扫描中暂不可用)' : '';
-
-  body.innerHTML = rules.map(r => `
-    <div class="rule-card ${r.enabled ? '' : 'disabled'}" id="rule-card-${r.id}">
-      <div class="rule-icon">${r.icon}</div>
-      <div class="rule-info">
-        <div class="rule-name">${escHtml(r.name)}</div>
-        <div class="rule-meta">
-          <span>${riskLabel[r.risk] || r.risk}</span>
-          <span>${logicLabel[r.logic] || r.logic}</span>
-          <span>${r.conditions.length} 个条件</span>
-          <span style="color:${r.enabled ? 'var(--green)' : 'var(--red)'}">
-            ${r.enabled ? '✅ 启用' : '❌ 禁用'}
-          </span>
-          <span>创建于 ${r.created_at}</span>
+    const ruleList = document.getElementById('ruleListBody');
+    const ruleCount = document.getElementById('ruleCount');
+    ruleCount.textContent = data.total;
+    ruleList.innerHTML = '';
+    data.rules.forEach((rule, index) => {
+      const ruleCard = document.createElement('div');
+      ruleCard.className = 'rule-card';
+      ruleCard.style = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; transition: all var(--transition-normal); box-shadow: var(--shadow-sm);';
+      ruleCard.onmouseover = () => {
+        ruleCard.style.transform = 'translateY(-2px)';
+        ruleCard.style.boxShadow = 'var(--shadow-md)';
+      };
+      ruleCard.onmouseout = () => {
+        ruleCard.style.transform = 'translateY(0)';
+        ruleCard.style.boxShadow = 'var(--shadow-sm)';
+      };
+      ruleCard.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">${rule.icon || '📁'}</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">${rule.name}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">${rule.conditions.length} 个条件</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm" onclick="openRuleEditor('${rule.id}')" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
+              ✏️
+            </button>
+            <button class="btn btn-sm" onclick="deleteRule('${rule.id}')" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+              🗑️
+            </button>
+          </div>
         </div>
-      </div>
-      <div style="display:flex; gap:6px; flex-shrink:0;">
-        <button class="btn btn-ghost btn-sm"
-                ${disabledAttr}
-                style="${disabledStyle}"
-                onclick="toggleRuleEnabled('${r.id}', ${!r.enabled})"
-                title="${isScanning ? '扫描中暂不可用' : ''}">
-          ${r.enabled ? '禁用' : '启用'}${scanningNote}
-        </button>
-        <button class="btn btn-ghost btn-sm"
-                ${disabledAttr}
-                style="${disabledStyle}"
-                onclick="openRuleEditor('${r.id}')"
-                title="${isScanning ? '扫描中暂不可用' : ''}">
-          编辑${scanningNote}
-        </button>
-        <button class="btn btn-danger btn-sm"
-                ${disabledAttr}
-                style="${disabledStyle}"
-                onclick="confirmDeleteRule('${r.id}', '${escHtml(r.name)}')"
-                title="${isScanning ? '扫描中暂不可用' : ''}">
-          删除${scanningNote}
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── 一键清除确认 ──
-function confirmClearRules() {
-  State.pendingDelete = { type: '__clear_rules__', paths: [], ids: [] };
-  document.getElementById('confirmIcon').textContent = '🗑️';
-  document.getElementById('confirmTitle').textContent = '一键清除所有自定义规则';
-  document.getElementById('confirmDesc').textContent =
-    '此操作将删除所有自定义规则，且不可恢复，确认继续？';
-  document.getElementById('confirmFileList').innerHTML = '';
-  const btn = document.getElementById('confirmBtn');
-  btn.className = 'btn btn-danger';
-  btn.textContent = '确认清除';
-  document.getElementById('confirmModal').style.display = 'flex';
-}
-
-// ── 删除单条规则确认 ──
-function confirmDeleteRule(id, name) {
-  State.pendingDelete = { type: '__delete_rule__', ruleId: id, paths: [], ids: [] };
-  document.getElementById('confirmIcon').textContent = '⚠️';
-  document.getElementById('confirmTitle').textContent = '删除规则';
-  document.getElementById('confirmDesc').textContent = `确认删除规则「${name}」？`;
-  document.getElementById('confirmFileList').innerHTML = '';
-  const btn = document.getElementById('confirmBtn');
-  btn.className = 'btn btn-danger';
-  btn.textContent = '确认删除';
-  document.getElementById('confirmModal').style.display = 'flex';
-}
-
-// ── 重写 executeDelete 兼容规则删除 ──
-const _origExecuteDelete = executeDelete;
-executeDelete = async function() {
-  const { type } = State.pendingDelete;
-
-  // 清除所有规则
-  if (type === '__clear_rules__') {
-    closeConfirm();
-    try {
-      const res = await fetch('/api/custom_rules/clear', { method: 'POST' });
-      const data = await res.json();
-      showToast(data.msg, 'success');
-      await loadRuleList();
-      await loadSummary();
-      isManualRefresh = true;
-      await refreshResults();
-    } catch (e) {
-      showToast('清除失败', 'error');
-    }
-    return;
-  }
-
-  // 删除单条规则
-  if (type === '__delete_rule__') {
-    closeConfirm();
-    try {
-      const res = await fetch(
-        `/api/custom_rules/${State.pendingDelete.ruleId}`,
-        { method: 'DELETE' }
-      );
-      const data = await res.json();
-      if (data.success) {
-        showToast('规则已删除', 'success');
-        await loadRuleList();
-        await loadSummary();
-        isManualRefresh = true;
-        await refreshResults();
-      } else {
-        showToast(data.msg, 'error');
-      }
-    } catch (e) {
-      showToast('删除失败', 'error');
-    }
-    return;
-  }
-
-  // 其他走原有文件删除逻辑
-  return _origExecuteDelete();
-};
-
-// ── 启用/禁用规则 ──
-async function toggleRuleEnabled(id, enabled) {
-  try {
-    await fetch(`/api/custom_rules/${id}/toggle`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ enabled }),
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">风险等级: ${rule.risk === 'high' ? '🔴 高' : rule.risk === 'medium' ? '🟡 中' : '🟢 低'}</div>
+        <div style="font-size: 12px; color: var(--text-muted);">状态: ${rule.enabled ? '✅ 启用' : '❌ 禁用'}</div>
+      `;
+      ruleList.appendChild(ruleCard);
     });
-    await loadRuleList();
-    await loadSummary();
-    isManualRefresh = true;
-    await refreshResults();
-    showToast(enabled ? '规则已启用' : '规则已禁用', 'info');
   } catch (e) {
-    showToast('操作失败', 'error');
+    console.error('加载规则失败', e);
   }
 }
-
-// ═══════════════════════════════════════════════
-// 规则编辑器
-// ═══════════════════════════════════════════════
 
 async function openRuleEditor(ruleId) {
-  RuleEditor.mode = ruleId ? 'edit' : 'create';
-  RuleEditor.editId = ruleId;
-  RuleEditor.conditionCounter = 0;
-
-  document.getElementById('editorTitle').textContent =
-    ruleId ? '编辑规则' : '新增规则';
-  document.getElementById('editorErrors').style.display = 'none';
-  document.getElementById('testResult').style.display = 'none';
-  document.getElementById('testPath').value = '';
-
-  if (ruleId) {
-    // 加载已有规则数据
-    try {
-      const res = await fetch('/api/custom_rules');
-      const data = await res.json();
-      const rule = data.rules.find(r => r.id === ruleId);
-      if (rule) {
-        fillEditor(rule);
-      }
-    } catch (e) {
-      showToast('加载规则数据失败', 'error');
-      return;
-    }
-  } else {
-    // 重置表单
+  const modal = document.getElementById('ruleEditorModal');
+  const title = document.getElementById('editorTitle');
+  if (ruleId === null) {
+    title.innerHTML = '<span>➕</span><span>新增规则</span>';
     document.getElementById('ruleName').value = '';
     document.getElementById('ruleIcon').value = '📁';
     document.getElementById('ruleRisk').value = 'medium';
     document.getElementById('ruleEnabled').checked = true;
     document.getElementById('logicOR').checked = true;
+    document.getElementById('logicAND').checked = false;
     document.getElementById('ruleCaseSensitive').checked = false;
     document.getElementById('conditionList').innerHTML = '';
-    addCondition(); // 默认一个条件
-  }
-
-  document.getElementById('ruleEditorModal').style.display = 'flex';
-}
-
-function fillEditor(rule) {
-  document.getElementById('ruleName').value = rule.name;
-  document.getElementById('ruleIcon').value = rule.icon || '📁';
-  document.getElementById('ruleRisk').value = rule.risk || 'medium';
-  document.getElementById('ruleEnabled').checked = rule.enabled !== false;
-  document.getElementById('ruleCaseSensitive').checked = rule.case_sensitive || false;
-
-  // 逻辑
-  if (rule.logic === 'AND') {
-    document.getElementById('logicAND').checked = true;
+    addCondition();
   } else {
-    document.getElementById('logicOR').checked = true;
+    title.innerHTML = '<span>✏️</span><span>编辑规则</span>';
+    try {
+      const res = await fetch(`/api/custom_rules/${ruleId}`);
+      const data = await res.json();
+      if (data.success) {
+        const rule = data.rule;
+        document.getElementById('ruleName').value = rule.name;
+        document.getElementById('ruleIcon').value = rule.icon || '📁';
+        document.getElementById('ruleRisk').value = rule.risk;
+        document.getElementById('ruleEnabled').checked = rule.enabled;
+        document.getElementById('logicOR').checked = rule.logic === 'OR';
+        document.getElementById('logicAND').checked = rule.logic === 'AND';
+        document.getElementById('ruleCaseSensitive').checked = rule.case_sensitive || false;
+        document.getElementById('conditionList').innerHTML = '';
+        rule.conditions.forEach(cond => {
+          addCondition(cond);
+        });
+      }
+    } catch (e) {
+      console.error('加载规则失败', e);
+    }
   }
-
-  // 条件
-  document.getElementById('conditionList').innerHTML = '';
-  (rule.conditions || []).forEach(cond => addCondition(cond));
+  modal.style.display = 'flex';
 }
 
 function closeRuleEditor() {
   document.getElementById('ruleEditorModal').style.display = 'none';
 }
 
-// ── 添加条件行 ──
-function addCondition(cond = null) {
-  const id = ++RuleEditor.conditionCounter;
-  const container = document.getElementById('conditionList');
-
-  const row = document.createElement('div');
-  row.className = 'condition-row';
-  row.dataset.condId = id;
-
-  const typeOptions = [
-    ['filename_keyword', '文件名关键词'],
-    ['filename_regex',   '文件名正则'],
-    ['path_contains',    '路径包含'],
-    ['path_regex',       '路径正则'],
-    ['extension',        '扩展名'],
-    ['content_keyword',  '内容关键词'],
-  ];
-
-  const selectedType = cond ? cond.type : 'filename_keyword';
-  const selectedVal  = cond ? cond.value : '';
-
-  const isRegex = selectedType === 'filename_regex' || selectedType === 'path_regex';
-
-  row.innerHTML = `
-    <select onchange="onCondTypeChange(this, ${id})">
-      ${typeOptions.map(([v, l]) =>
-        `<option value="${v}" ${v === selectedType ? 'selected' : ''}>${l}</option>`
-      ).join('')}
+function addCondition(condition = null) {
+  const list = document.getElementById('conditionList');
+  const index = list.children.length;
+  const condDiv = document.createElement('div');
+  condDiv.className = 'condition-item';
+  condDiv.style = 'display: flex; gap: 10px; align-items: center; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md);';
+  condDiv.innerHTML = `
+    <select class="cond-type" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+      <option value="filename">文件名</option>
+      <option value="extension">扩展名</option>
+      <option value="path">路径</option>
+      <option value="content">内容</option>
     </select>
-    <input type="text"
-           class="${isRegex ? 'regex-input' : ''}"
-           id="condVal_${id}"
-           value="${escHtml(selectedVal)}"
-           placeholder="${getCondPlaceholder(selectedType)}">
-    <button class="btn btn-ghost btn-sm" style="flex-shrink:0; color:var(--red);"
-            onclick="removeCondition(${id})">✕</button>
+    <select class="cond-op" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+      <option value="contains">包含</option>
+      <option value="equals">等于</option>
+      <option value="starts_with">开头是</option>
+      <option value="ends_with">结尾是</option>
+      <option value="regex">正则</option>
+    </select>
+    <input type="text" class="cond-value" placeholder="输入值" style="flex: 2; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+    <button class="btn btn-sm" onclick="removeCondition(this)" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+      ✕
+    </button>
   `;
-
-  container.appendChild(row);
+  if (condition) {
+    condDiv.querySelector('.cond-type').value = condition.type;
+    condDiv.querySelector('.cond-op').value = condition.operator;
+    condDiv.querySelector('.cond-value').value = condition.value;
+  }
+  list.appendChild(condDiv);
 }
 
-function removeCondition(id) {
-  const el = document.querySelector(`[data-cond-id="${id}"]`);
-  if (el) el.remove();
-}
-
-function onCondTypeChange(select, id) {
-  const val = select.value;
-  const input = document.getElementById(`condVal_${id}`);
-  const isRegex = val === 'filename_regex' || val === 'path_regex';
-  input.className = isRegex ? 'regex-input' : '';
-  input.placeholder = getCondPlaceholder(val);
-  input.value = '';
-}
-
-function getCondPlaceholder(type) {
-  const map = {
-    filename_keyword: '例如：简历',
-    filename_regex:   '例如：.*简历.*\\.docx$',
-    path_contains:    '例如：D:\\personal',
-    path_regex:       '例如：.*\\\\backup\\\\.*',
-    extension:        '例如：.pdf,.docx,.xlsx',
-    content_keyword:  '例如：个人简历',
-  };
-  return map[type] || '';
-}
-
-// ── 收集编辑器数据 ──
-function collectEditorPayload() {
-  const name    = document.getElementById('ruleName').value.trim();
-  const icon    = document.getElementById('ruleIcon').value.trim() || '📁';
-  const risk    = document.getElementById('ruleRisk').value;
-  const enabled = document.getElementById('ruleEnabled').checked;
-  const logic   = document.querySelector('input[name="ruleLogic"]:checked')?.value || 'OR';
-  const caseSen = document.getElementById('ruleCaseSensitive').checked;
-
-  const conditions = [];
-  document.querySelectorAll('.condition-row').forEach(row => {
-    const id = row.dataset.condId;
-    const type  = row.querySelector('select').value;
-    const value = document.getElementById(`condVal_${id}`)?.value.trim() || '';
-    if (value) conditions.push({ type, value });
-  });
-
-  return { name, icon, risk, enabled, logic, case_sensitive: caseSen, conditions };
-}
-
-// ── 保存规则 ──
-async function saveRule() {
-  const payload = collectEditorPayload();
-  document.getElementById('editorErrors').style.display = 'none';
-
-  try {
-    let res;
-    if (RuleEditor.mode === 'edit') {
-      res = await fetch(`/api/custom_rules/${RuleEditor.editId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      res = await fetch('/api/custom_rules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    }
-
-    const data = await res.json();
-    if (data.success) {
-      showToast(
-        RuleEditor.mode === 'edit' ? '规则已更新' : '规则已创建',
-        'success'
-      );
-      closeRuleEditor();
-      await loadRuleList();
-      await loadSummary();
-      isManualRefresh = true;
-      await refreshResults();
-    } else {
-      const errBox = document.getElementById('editorErrors');
-      errBox.innerHTML = (data.errors || ['保存失败']).map(e => `<div>❌ ${e}</div>`).join('');
-      errBox.style.display = 'block';
-    }
-  } catch (e) {
-    showToast('保存失败：' + e.message, 'error');
+function removeCondition(button) {
+  const condDiv = button.closest('.condition-item');
+  if (condDiv) {
+    condDiv.remove();
   }
 }
 
-// ═══════════════════════════════════════════════
-// 测试规则
-// ═══════════════════════════════════════════════
-async function runTestRule() {
-  const testPath = document.getElementById('testPath').value.trim();
-  if (!testPath) {
-    showToast('请输入测试路径', 'error');
+async function saveRule() {
+  const name = document.getElementById('ruleName').value.trim();
+  if (!name) {
+    showEditorError('规则名称不能为空');
     return;
   }
+  const conditions = [];
+  document.querySelectorAll('.condition-item').forEach(item => {
+    const type = item.querySelector('.cond-type').value;
+    const op = item.querySelector('.cond-op').value;
+    const value = item.querySelector('.cond-value').value.trim();
+    if (value) {
+      conditions.push({ type, operator: op, value });
+    }
+  });
+  if (conditions.length === 0) {
+    showEditorError('至少需要一个匹配条件');
+    return;
+  }
+  const rule = {
+    name,
+    icon: document.getElementById('ruleIcon').value || '📁',
+    risk: document.getElementById('ruleRisk').value,
+    enabled: document.getElementById('ruleEnabled').checked,
+    logic: document.getElementById('logicOR').checked ? 'OR' : 'AND',
+    case_sensitive: document.getElementById('ruleCaseSensitive').checked,
+    conditions
+  };
+  try {
+    const res = await fetch('/api/custom_rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rule),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则保存成功', 'success');
+      closeRuleEditor();
+      loadRules();
+    } else {
+      showEditorError(data.errors ? data.errors.join(', ') : '保存失败');
+    }
+  } catch (e) {
+    showEditorError('保存失败');
+  }
+}
 
-  const payload = collectEditorPayload();
-  document.getElementById('testResult').style.display = 'none';
+function showEditorError(message) {
+  const errors = document.getElementById('editorErrors');
+  errors.textContent = message;
+  errors.style.display = 'block';
+  setTimeout(() => {
+    errors.style.display = 'none';
+  }, 3000);
+}
 
+async function deleteRule(ruleId) {
+  if (!confirm('确定要删除此规则吗？')) return;
+  try {
+    const res = await fetch(`/api/custom_rules/${ruleId}`, {
+      method: 'DELETE',
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则删除成功', 'success');
+      loadRules();
+    }
+  } catch (e) {
+    showToast('删除失败', 'error');
+  }
+}
+
+function confirmClearRules() {
+  if (confirm('确定要清除所有自定义规则吗？')) {
+    clearRules();
+  }
+}
+
+async function clearRules() {
+  try {
+    const res = await fetch('/api/custom_rules/clear', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则已清除', 'success');
+      loadRules();
+    }
+  } catch (e) {
+    showToast('清除失败', 'error');
+  }
+}
+
+async function runTestRule() {
+  const path = document.getElementById('testPath').value.trim();
+  if (!path) {
+    showEditorError('请输入测试路径');
+    return;
+  }
+  const name = document.getElementById('ruleName').value.trim();
+  const conditions = [];
+  document.querySelectorAll('.condition-item').forEach(item => {
+    const type = item.querySelector('.cond-type').value;
+    const op = item.querySelector('.cond-op').value;
+    const value = item.querySelector('.cond-value').value.trim();
+    if (value) {
+      conditions.push({ type, operator: op, value });
+    }
+  });
+  if (conditions.length === 0) {
+    showEditorError('至少需要一个匹配条件');
+    return;
+  }
+  const rule = {
+    name,
+    icon: document.getElementById('ruleIcon').value || '📁',
+    risk: document.getElementById('ruleRisk').value,
+    enabled: document.getElementById('ruleEnabled').checked,
+    logic: document.getElementById('logicOR').checked ? 'OR' : 'AND',
+    case_sensitive: document.getElementById('ruleCaseSensitive').checked,
+    conditions
+  };
   try {
     const res = await fetch('/api/custom_rules/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rule: payload, path: testPath }),
+      body: JSON.stringify({ rule, path }),
     });
     const data = await res.json();
-
-    if (!data.success) {
-      showToast(data.msg, 'error');
-      return;
+    const result = document.getElementById('testResult');
+    const badge = document.getElementById('testHitBadge');
+    const conditionResults = document.getElementById('testConditionResults');
+    if (data.success) {
+      result.style.display = 'block';
+      if (data.result.hit) {
+        badge.innerHTML = '<span class="badge badge-risk-low">✅ 规则命中</span>';
+      } else {
+        badge.innerHTML = '<span class="badge badge-risk-high">❌ 规则未命中</span>';
+      }
+      conditionResults.innerHTML = data.result.condition_results.map(cr => `
+        <div style="padding: 6px 10px; border-radius: var(--radius-sm); ${cr.hit ? 'background: var(--accent-green-light); color: var(--accent-green);' : 'background: var(--accent-red-light); color: var(--accent-red);'}">
+          ${cr.condition.type}: ${cr.condition.operator} "${cr.condition.value}" → ${cr.hit ? '✅' : '❌'}
+        </div>
+      `).join('');
     }
-
-    renderTestResult(data.result);
   } catch (e) {
-    showToast('测试失败：' + e.message, 'error');
+    showEditorError('测试失败');
   }
 }
 
-function renderTestResult(result) {
-  const panel = document.getElementById('testResult');
-  panel.style.display = 'block';
-
-  // 总命中状态
-  const badge = document.getElementById('testHitBadge');
-  badge.innerHTML = result.hit
-    ? `<span style="color:var(--green); font-weight:700; font-size:13px;">
-         ✅ 命中！文件「${escHtml(result.file_name)}」匹配此规则
-       </span>`
-    : `<span style="color:var(--red); font-weight:700; font-size:13px;">
-         ❌ 未命中，文件「${escHtml(result.file_name)}」不匹配此规则
-       </span>`;
-
-  // 逻辑说明
-  const logicNote = result.logic === 'AND'
-    ? '（AND模式：需要所有条件都命中）'
-    : '（OR模式：任意条件命中即可）';
-
-  // 各条件结果
-  const condHtml = result.condition_results.map(c => {
-    if (c.error) {
-      return `
-        <div class="test-cond-row err">
-          <span class="hit-icon">⚠️</span>
-          <span class="cond-desc">${escHtml(c.type_label)}</span>
-          <span class="cond-val">${escHtml(c.value)}</span>
-          <span style="color:var(--yellow); margin-left:auto;">${escHtml(c.error)}</span>
-        </div>`;
-    }
-    return `
-      <div class="test-cond-row ${c.hit ? 'hit' : 'miss'}">
-        <span class="hit-icon">${c.hit ? '✅' : '❌'}</span>
-        <span class="cond-desc">${escHtml(c.type_label)}</span>
-        <span class="cond-val">${escHtml(c.value)}</span>
-        <span style="margin-left:auto; font-size:11px; color:${c.hit ? 'var(--green)' : 'var(--red)'};">
-          ${c.hit ? '命中' : '未命中'}
-        </span>
-      </div>`;
-  }).join('');
-
-  document.getElementById('testConditionResults').innerHTML = `
-    <div style="color:var(--text2); font-size:11px; margin-bottom:6px;">${logicNote}</div>
-    ${condHtml}
-  `;
+function openPersonalDirManager() {
+  document.getElementById('personalDirModal').style.display = 'flex';
+  loadPersonalDirs();
 }
 
-// ═══════════════════════════════════════════════
-// 智能识别统计
-// ═══════════════════════════════════════════════
+function closePersonalDirManager() {
+  document.getElementById('personalDirModal').style.display = 'none';
+}
 
-async function openSmartStats() {
+async function loadPersonalDirs() {
+  try {
+    const res = await fetch('/api/personal_dirs');
+    const data = await res.json();
+    const list = document.getElementById('personalDirList');
+    list.innerHTML = '';
+    data.dirs.forEach((dir, index) => {
+      const dirItem = document.createElement('div');
+      dirItem.style = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; transition: all var(--transition-normal);';
+      dirItem.onmouseover = () => {
+        dirItem.style.background = 'var(--bg-secondary)';
+        dirItem.style.transform = 'translateX(4px)';
+      };
+      dirItem.onmouseout = () => {
+        dirItem.style.background = 'var(--bg-tertiary)';
+        dirItem.style.transform = 'translateX(0)';
+      };
+      dirItem.innerHTML = `
+        <div style="font-size: 13px;">${dir}</div>
+        <button class="btn btn-sm" onclick="removePersonalDir(${index})" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 4px 8px;">
+          ✕
+        </button>
+      `;
+      list.appendChild(dirItem);
+    });
+  } catch (e) {
+    console.error('加载个人目录失败', e);
+  }
+}
+
+function browsePersonalDir() {
+  // 这里可以添加文件选择器逻辑
+  showToast('功能开发中', 'info');
+}
+
+async function addPersonalDir() {
+  const path = document.getElementById('newPersonalDir').value.trim();
+  if (!path) {
+    showToast('请输入目录路径', 'error');
+    return;
+  }
+  try {
+    const res = await fetch('/api/personal_dirs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('目录添加成功', 'success');
+      document.getElementById('newPersonalDir').value = '';
+      loadPersonalDirs();
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch (e) {
+    showToast('添加失败', 'error');
+  }
+}
+
+async function removePersonalDir(index) {
+  try {
+    const dirs = document.querySelectorAll('#personalDirList > div');
+    if (dirs[index]) {
+      const dirPath = dirs[index].querySelector('div').textContent.trim();
+      const res = await fetch('/api/personal_dirs', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: dirPath }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('目录已移除', 'success');
+        loadPersonalDirs();
+      }
+    }
+  } catch (e) {
+    showToast('移除失败', 'error');
+  }
+}
+
+async function clearAllPersonalDirs() {
+  if (confirm('确定要清空所有个人目录吗？')) {
+    try {
+      const res = await fetch('/api/personal_dirs/clear', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('个人目录已清空', 'success');
+        loadPersonalDirs();
+      }
+    } catch (e) {
+      showToast('清空失败', 'error');
+    }
+  }
+}
+
+async function markSelectedDirsAsPersonal() {
+  const selected = getFilteredResults().filter(f => State.selectedIds.has(f.id));
+  if (selected.length === 0) {
+    showToast('请先选择文件', 'error');
+    return;
+  }
+  const dirs = [...new Set(selected.map(f => f.path.split('\\').slice(0, -1).join('\\'))];
+  try {
+    const res = await fetch('/api/smart/learn/batch_positive', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dir_paths: dirs, all_file_paths: selected.map(f => f.path) }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`成功添加 ${dirs.length} 个目录到个人目录并学习`, 'success');
+      clearSelection();
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch (e) {
+    showToast('操作失败', 'error');
+  }
+}
+
+function openSmartStats() {
   document.getElementById('smartStatsModal').style.display = 'flex';
-  await refreshSmartStats();
+  loadSmartStats();
 }
 
 function closeSmartStats() {
   document.getElementById('smartStatsModal').style.display = 'none';
 }
 
-async function refreshSmartStats() {
+async function loadSmartStats() {
   try {
-    const [statsRes, patternsRes] = await Promise.all([
-      fetch('/api/smart/stats'),
-      fetch('/api/smart/patterns'),
-    ]);
-    const statsData = await statsRes.json();
+    const res = await fetch('/api/smart/stats');
+    const data = await res.json();
+    const content = document.getElementById('smartStatsContent');
+    const patterns = document.getElementById('learnedPatterns');
+    content.innerHTML = `
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-blue); margin-bottom: 8px;">${data.stats.total_scanned || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">总扫描文件</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">${data.stats.learned_patterns || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">学习到的模式</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-yellow); margin-bottom: 8px;">${data.stats.personal_dirs || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">个人目录</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-purple); margin-bottom: 8px;">${data.stats.custom_rules || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">自定义规则</div>
+      </div>
+    `;
+    // 加载学习到的模式
+    const patternsRes = await fetch('/api/smart/patterns');
     const patternsData = await patternsRes.json();
-    
-    if (statsData.success) {
-      const stats = statsData.stats;
-      document.getElementById('smartStatsContent').innerHTML = `
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">📚 学习次数</div>
-          <div style="font-size:24px; font-weight:700; color:var(--accent);">${stats.learn_count}</div>
-        </div>
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">✅ 正例（个人目录）</div>
-          <div style="font-size:24px; font-weight:700; color:var(--green);">${stats.positive_examples}</div>
-        </div>
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">❌ 反例（非个人目录）</div>
-          <div style="font-size:24px; font-weight:700; color:var(--red);">${stats.negative_examples}</div>
-        </div>
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">🔑 学习到的关键词</div>
-          <div style="font-size:24px; font-weight:700; color:var(--yellow);">${stats.path_keywords}</div>
-        </div>
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">📁 目录模式</div>
-          <div style="font-size:24px; font-weight:700; color:var(--accent);">${stats.dir_patterns}</div>
-        </div>
-        <div style="background:var(--bg3); border-radius:var(--radius); padding:14px;">
-          <div style="font-size:11px; color:var(--text2); margin-bottom:6px;">📄 学习的扩展名</div>
-          <div style="font-size:24px; font-weight:700; color:var(--green);">${stats.extensions_learned}</div>
-        </div>
-      `;
-    }
-    
     if (patternsData.success) {
-      const patterns = patternsData.patterns;
-      let patternsHtml = '';
-      
-      if (patterns.path_keywords && patterns.path_keywords.length > 0) {
-        patternsHtml += `<div style="margin-bottom:10px;"><div style="font-size:12px; color:var(--text2); margin-bottom:4px;">关键词：</div><div style="display:flex; flex-wrap:wrap; gap:6px;">${patterns.path_keywords.slice(0, 20).map(k => `<span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:11px;">${escHtml(k)}</span>`).join('')}</div></div>`;
-      }
-      if (patterns.dir_patterns && patterns.dir_patterns.length > 0) {
-        patternsHtml += `<div style="margin-bottom:10px;"><div style="font-size:12px; color:var(--text2); margin-bottom:4px;">目录模式：</div><div style="font-size:11px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escHtml(patterns.dir_patterns.slice(0, 5).join(' | '))}</div></div>`;
-      }
-      if (patterns.extension_weights && Object.keys(patterns.extension_weights).length > 0) {
-        const exts = Object.entries(patterns.extension_weights).slice(0, 10).map(([ext, w]) => `${ext}(${w})`).join(', ');
-        patternsHtml += `<div><div style="font-size:12px; color:var(--text2); margin-bottom:4px;">扩展名权重：</div><div style="font-size:11px; color:var(--text);">${escHtml(exts)}</div></div>`;
-      }
-      
-      if (!patternsHtml) {
-        patternsHtml = '<div style="color:var(--text2); font-size:12px; text-align:center; padding:20px;">暂无学习到的模式，标记一些个人目录后开始学习吧！</div>';
-      }
-      
-      document.getElementById('learnedPatterns').innerHTML = patternsHtml;
+      patterns.innerHTML = patternsData.patterns ? patternsData.patterns.map(p => `
+        <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
+          <div style="font-weight: 600;">${p.type}</div>
+          <div style="color: var(--text-muted);">${p.pattern}</div>
+        </div>
+      `).join('') : '<div style="text-align: center; color: var(--text-muted); padding: 40px 0;">暂无学习到的模式</div>';
     }
   } catch (e) {
-    console.error('加载智能统计失败', e);
+    console.error('加载统计失败', e);
   }
 }
 
-// ═══════════════════════════════════════════════
-// 智能建议：一键标记
-// ═══════════════════════════════════════════════
-
-async function markDirAsPersonal(dirPath, filePaths = []) {
-  try {
-    const res = await fetch('/api/smart/mark_and_learn', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: dirPath, file_paths: filePaths }),
-    });
-    const data = await res.json();
-    
-    if (data.success) {
-      showToast(data.msg, 'success');
-      isManualRefresh = true;
-      await refreshResults();
-      return true;
-    } else {
-      showToast(data.msg || '标记失败', 'error');
-      return false;
-    }
-  } catch (e) {
-    showToast('标记失败', 'error');
-    return false;
-  }
+function refreshSmartStats() {
+  loadSmartStats();
 }
 
-async function quickMarkPersonal(dirPath) {
-  const filesInDir = State.allResults.filter(r => r.dir === dirPath);
-  const filePaths = filesInDir.map(f => f.path);
-  
-  const success = await markDirAsPersonal(dirPath, filePaths);
-  if (success) {
-    await loadPersonalDirList();
-  }
+function openExportModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" style="width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📋</span>
+          <span>导出文件清单</span>
+        </div>
+        <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); padding: 8px 12px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.8;">
+          选择要导出的文件范围，系统将生成一个 CSV 文件。
+        </p>
+        <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+          <label class="filter-checkbox">
+            <input type="radio" name="exportScope" value="all" checked>
+            <span>导出所有文件</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="radio" name="exportScope" value="selected">
+            <span>仅导出选中文件</span>
+          </label>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 24px;">
+          <button class="btn btn-primary" onclick="exportFileList()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; flex: 1;">
+            <span>💾</span>
+            <span>导出清单</span>
+          </button>
+          <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+            <span>✕</span>
+            <span>取消</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
-// 从选中的文件中提取目录并批量标记
-async function markSelectedDirsAsPersonal() {
-  const selectedFiles = State.allResults.filter(r => State.selectedIds.has(r.id));
-  if (selectedFiles.length === 0) {
-    showToast('请先选择文件', 'error');
-    return;
+async function exportFileList() {
+  const scope = document.querySelector('input[name="exportScope"]:checked').value;
+  let ids = [];
+  if (scope === 'selected') {
+    ids = Array.from(State.selectedIds);
   }
-  
-  const dirPaths = [...new Set(selectedFiles.map(f => f.dir))];
-  const allFilePaths = selectedFiles.map(f => f.path);
-  
-  try {
-    const res = await fetch('/api/smart/learn/batch_positive', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dir_paths: dirPaths, all_file_paths: allFilePaths }),
-    });
-    const data = await res.json();
-    
-    if (data.success) {
-      showToast(data.msg, 'success');
-      isManualRefresh = true;
-      await refreshResults();
-    } else {
-      showToast(data.msg || '批量学习失败', 'error');
-    }
-  } catch (e) {
-    showToast('批量学习失败', 'error');
-  }
-}
-
-// ═══════════════════════════════════════════════
-// 导出
-// ═══════════════════════════════════════════════
-async function openExportModal() {
-  const ids = State.selectedIds.size > 0 ? Array.from(State.selectedIds) : [];
   try {
     const res = await fetch('/api/file/export', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ids }),
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`已导出 ${data.count} 条记录到：${data.path}`, 'success', 5000);
+      showToast(`成功导出 ${data.count} 个文件到 ${data.path}`, 'success');
+      // 打开导出文件所在目录
+      fetch('/api/file/open_dir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: data.path, is_dir: false }),
+      });
     } else {
       showToast('导出失败', 'error');
     }
   } catch (e) {
-    showToast('导出失败：' + e.message, 'error');
+    showToast('导出失败', 'error');
   }
-}
-
-// ═══════════════════════════════════════════════
-// 在资源管理器中打开
-// ═══════════════════════════════════════════════
-async function openInExplorer(id) {
-  const item = State.allResults.find(r => r.id === id);
-  if (!item) {
-    showToast('找不到文件信息', 'error');
-    return;
-  }
-  const path  = item.path;
-  const isDir = item.is_dir || false;
-
-  try {
-    const res  = await fetch('/api/file/open_dir', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ path, is_dir: isDir }),
-    });
-    const data = await res.json();
-    if (!data.success) {
-      showToast(data.msg || '无法打开目录', 'error');
-    }
-  } catch (e) {
-    showToast('操作失败：' + e.message, 'error');
-  }
-}
-
-// ═══════════════════════════════════════════════
-// Toast 通知
-// ═══════════════════════════════════════════════
-function showToast(msg, type = 'info', duration = 3000) {
-  const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
-  toast.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.animation = 'none';
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
-    toast.style.transition = 'all 0.3s';
-    setTimeout(() => toast.remove(), 300);
-  }, duration);
-}
-
-// ═══════════════════════════════════════════════
-// 工具函数
-// ═══════════════════════════════════════════════
-function escHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  // 关闭模态框
+  document.querySelector('.modal-overlay').remove();
 }
 </script>
 </body>

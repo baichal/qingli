@@ -24,6 +24,7 @@ from .progress_manager import (
 )
 from .personal_dirs import is_personal_dir
 from .smart_recognizer import is_suspected_personal
+from .intelligent_classifier import intelligent_classifier
 
 
 # ─────────────────────────────────────────
@@ -373,13 +374,14 @@ class Scanner:
     
     # ── 公开接口 ──────────────────────────────
 
-    def start(self, drives: list = None, extra_exclude: list = None, resume: bool = False):
+    def start(self, drives: list = None, extra_exclude: list = None, resume: bool = False, fast_mode: bool = False):
         if self.is_running:
             return False
         
         self._stop_event.clear()
         self._extra_exclude = extra_exclude or []
         self._resume_data = None
+        self._fast_mode = fast_mode
         
         if resume and should_resume_scan():
             self._resume_data = load_scan_progress()
@@ -992,7 +994,17 @@ class Scanner:
             suspected_reason = ""
             suspected_confidence = 0.0
             if not is_personal:
-                is_suspected, suspected_score, suspected_reason, suspected_confidence = is_suspected_personal(file_path, stat_info)
+                # 根据模式选择使用快速分析或深度分析
+                if hasattr(self, '_fast_mode') and self._fast_mode:
+                    # 快速模式：使用智能分类器的快速分析
+                    result = intelligent_classifier.classify_file_fast(file_path, stat_info)
+                    is_suspected = result["category"] == "personal"
+                    suspected_score = result["confidence"] * 100
+                    suspected_reason = result["reason"]
+                    suspected_confidence = result["confidence"]
+                else:
+                    # 深度模式：使用智能识别器
+                    is_suspected, suspected_score, suspected_reason, suspected_confidence = is_suspected_personal(file_path, stat_info)
             
             # 如果是个人目录或疑似个人内容，即使没有分类也要保留
             if category is None and not is_personal and not is_suspected:
