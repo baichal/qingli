@@ -2184,28 +2184,43 @@ function setUIScanning(isScanning) {
 
 async function refreshResults() {
   try {
-    const res = await fetch('/api/results');
+    const res = await fetch('/api/scan/results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        time_range: State.currentTimeRange,
+        time_start: document.getElementById('timeStart').value,
+        time_end: document.getElementById('timeEnd').value,
+        category: State.currentCategory,
+        personal_only: State.currentPersonalOnly,
+        suspected_only: State.currentSuspectedOnly,
+        page: State.currentPage,
+        page_size: State.pageSize
+      }),
+    });
     const data = await res.json();
-    const oldPaths = new Set(State.allResults.map(f => f.path));
-    const newPaths = new Set(data.results.map(f => f.path));
-    const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
-    if (removedCount > 0) {
-      showRemovedFilesNotification(removedCount);
+    if (data.success) {
+      const oldPaths = new Set(State.allResults.map(f => f.path));
+      const newPaths = new Set(data.results.map(f => f.path));
+      const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
+      if (removedCount > 0) {
+        showRemovedFilesNotification(removedCount);
+      }
+      State.allResults = data.results;
+      State.totalCount = data.total;
+      if (State.totalCount === 0) {
+        document.getElementById('emptyState').style.display = 'flex';
+        document.getElementById('fileTable').style.display = 'none';
+        document.getElementById('paginationBar').style.display = 'none';
+      } else {
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('fileTable').style.display = 'table';
+        document.getElementById('paginationBar').style.display = 'flex';
+      }
+      renderTable(getFilteredResults());
+      updateSidebarCounts();
+      updateSelectionBar();
     }
-    State.allResults = data.results;
-    State.totalCount = data.total_count;
-    if (State.totalCount === 0) {
-      document.getElementById('emptyState').style.display = 'flex';
-      document.getElementById('fileTable').style.display = 'none';
-      document.getElementById('paginationBar').style.display = 'none';
-    } else {
-      document.getElementById('emptyState').style.display = 'none';
-      document.getElementById('fileTable').style.display = 'table';
-      document.getElementById('paginationBar').style.display = 'flex';
-    }
-    renderTable(getFilteredResults());
-    updateSidebarCounts();
-    updateSelectionBar();
   } catch (e) {
     console.error('刷新结果失败', e);
   }
@@ -2495,10 +2510,11 @@ async function executeDelete() {
   const { type, paths, ids } = State.pendingDelete;
   closeConfirm();
   try {
-    const res = await fetch('/api/delete', {
+    const endpoint = type === 'trash' ? '/api/file/delete/trash' : '/api/file/delete/permanent';
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths, type }),
+      body: JSON.stringify({ paths, confirm: type === 'permanent' }),
     });
     const data = await res.json();
     if (data.success) {
@@ -2558,22 +2574,85 @@ function togglePreview(file) {
 
 async function previewFile(id) {
   try {
-    const res = await fetch(`/api/preview/${id}`);
+    const file = getFilteredResults().find(f => f.id === id);
+    if (!file) {
+      throw new Error('文件不存在');
+    }
+    const res = await fetch('/api/file/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: file.path }),
+    });
     const data = await res.json();
     const body = document.getElementById('previewBody');
-    if (data.success) {
-      if (data.preview) {
-        body.innerHTML = `<div class="preview-content"><pre>${escapeHtml(data.preview)}</pre></div>`;
-      } else {
-        body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">无法预览此文件</div></div>';
-      }
+    if (data.type === 'text') {
+      body.innerHTML = `<div class="preview-content"><pre>${escapeHtml(data.content)}</pre></div>`;
+    } else if (data.type === 'image') {
+      body.innerHTML = `<div class="preview-content"><img src="/api/file/serve?path=${encodeURIComponent(file.path)}" alt="${file.name}"></div>`;
+    } else if (data.type === 'video') {
+      body.innerHTML = `<div class="preview-content"><video controls style="width: 100%; max-height: 300px; border-radius: var(--radius-md);"><source src="/api/file/serve?path=${encodeURIComponent(file.path)}" type="${data.mime}">您的浏览器不支持视频播放</video></div>`;
+    } else if (data.type === 'error') {
+      body.innerHTML = `<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">${data.content}</div></div>`;
     } else {
-      body.innerHTML = `<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">${data.msg}</div></div>`;
+      body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">无法预览此文件</div></div>';
     }
   } catch (e) {
     const body = document.getElementById('previewBody');
     body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">预览失败</div></div>';
   }
+}
+
+function getFilteredResults() {
+  let filtered = State.allResults;
+  if (State.currentCategory !== 'all') {
+    filtered = filtered.filter(f => f.category === State.currentCategory);
+  }
+  if (State.currentRisk) {
+    filtered = filtered.filter(f => f.risk === State.currentRisk);
+  }
+  if (State.currentKeyword) {
+    const keyword = State.currentKeyword.toLowerCase();
+    filtered = filtered.filter(f => 
+      f.name.toLowerCase().includes(keyword) || 
+      f.path.toLowerCase().includes(keyword)
+    );
+  }
+  if (State.currentTimeRange === '1month') {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= monthAgo);
+  } else if (State.currentTimeRange === '3months') {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= threeMonthsAgo);
+  } else if (State.currentTimeRange === '1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= yearAgo);
+  } else if (State.currentTimeRange === 'older1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) < yearAgo);
+  } else if (State.currentTimeRange === 'custom') {
+    const start = document.getElementById('timeStart').value;
+    const end = document.getElementById('timeEnd').value;
+    if (start) {
+      const startDate = new Date(start);
+      filtered = filtered.filter(f => new Date(f.modified_time) >= startDate);
+    }
+    if (end) {
+      const endDate = new Date(end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(f => new Date(f.modified_time) <= endDate);
+    }
+  }
+  if (State.currentPersonalOnly) {
+    filtered = filtered.filter(f => f.is_personal_dir === true);
+  }
+  if (State.currentSuspectedOnly) {
+    filtered = filtered.filter(f => f.is_personal === true && f.is_personal_dir !== true);
+  }
+  return filtered;
 }
 
 function togglePreview() {
@@ -2598,7 +2677,7 @@ function escapeHtml(text) {
 
 async function loadSummary() {
   try {
-    const res = await fetch('/api/summary');
+    const res = await fetch('/api/scan/summary');
     const data = await res.json();
     State.summaryData = data.summary;
     updateSidebarCounts();
@@ -2662,11 +2741,11 @@ function closeRuleManager() {
 
 async function loadRules() {
   try {
-    const res = await fetch('/api/rules');
+    const res = await fetch('/api/custom_rules');
     const data = await res.json();
     const ruleList = document.getElementById('ruleListBody');
     const ruleCount = document.getElementById('ruleCount');
-    ruleCount.textContent = data.rules.length;
+    ruleCount.textContent = data.total;
     ruleList.innerHTML = '';
     data.rules.forEach((rule, index) => {
       const ruleCard = document.createElement('div');
@@ -2690,10 +2769,10 @@ async function loadRules() {
             </div>
           </div>
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm" onclick="openRuleEditor(${index})" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
+            <button class="btn btn-sm" onclick="openRuleEditor('${rule.id}')" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
               ✏️
             </button>
-            <button class="btn btn-sm" onclick="deleteRule(${index})" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+            <button class="btn btn-sm" onclick="deleteRule('${rule.id}')" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
               🗑️
             </button>
           </div>
@@ -2708,10 +2787,10 @@ async function loadRules() {
   }
 }
 
-function openRuleEditor(index) {
+async function openRuleEditor(ruleId) {
   const modal = document.getElementById('ruleEditorModal');
   const title = document.getElementById('editorTitle');
-  if (index === null) {
+  if (ruleId === null) {
     title.innerHTML = '<span>➕</span><span>新增规则</span>';
     document.getElementById('ruleName').value = '';
     document.getElementById('ruleIcon').value = '📁';
@@ -2724,18 +2803,26 @@ function openRuleEditor(index) {
     addCondition();
   } else {
     title.innerHTML = '<span>✏️</span><span>编辑规则</span>';
-    const rule = State.summaryData.rules[index];
-    document.getElementById('ruleName').value = rule.name;
-    document.getElementById('ruleIcon').value = rule.icon || '📁';
-    document.getElementById('ruleRisk').value = rule.risk;
-    document.getElementById('ruleEnabled').checked = rule.enabled;
-    document.getElementById('logicOR').checked = rule.logic === 'OR';
-    document.getElementById('logicAND').checked = rule.logic === 'AND';
-    document.getElementById('ruleCaseSensitive').checked = rule.case_sensitive || false;
-    document.getElementById('conditionList').innerHTML = '';
-    rule.conditions.forEach(cond => {
-      addCondition(cond);
-    });
+    try {
+      const res = await fetch(`/api/custom_rules/${ruleId}`);
+      const data = await res.json();
+      if (data.success) {
+        const rule = data.rule;
+        document.getElementById('ruleName').value = rule.name;
+        document.getElementById('ruleIcon').value = rule.icon || '📁';
+        document.getElementById('ruleRisk').value = rule.risk;
+        document.getElementById('ruleEnabled').checked = rule.enabled;
+        document.getElementById('logicOR').checked = rule.logic === 'OR';
+        document.getElementById('logicAND').checked = rule.logic === 'AND';
+        document.getElementById('ruleCaseSensitive').checked = rule.case_sensitive || false;
+        document.getElementById('conditionList').innerHTML = '';
+        rule.conditions.forEach(cond => {
+          addCondition(cond);
+        });
+      }
+    } catch (e) {
+      console.error('加载规则失败', e);
+    }
   }
   modal.style.display = 'flex';
 }
@@ -2813,7 +2900,7 @@ async function saveRule() {
     conditions
   };
   try {
-    const res = await fetch('/api/rules', {
+    const res = await fetch('/api/custom_rules', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(rule),
@@ -2824,7 +2911,7 @@ async function saveRule() {
       closeRuleEditor();
       loadRules();
     } else {
-      showEditorError(data.msg);
+      showEditorError(data.errors ? data.errors.join(', ') : '保存失败');
     }
   } catch (e) {
     showEditorError('保存失败');
@@ -2840,13 +2927,11 @@ function showEditorError(message) {
   }, 3000);
 }
 
-async function deleteRule(index) {
+async function deleteRule(ruleId) {
   if (!confirm('确定要删除此规则吗？')) return;
   try {
-    const res = await fetch('/api/rules', {
+    const res = await fetch(`/api/custom_rules/${ruleId}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index }),
     });
     const data = await res.json();
     if (data.success) {
@@ -2866,7 +2951,7 @@ function confirmClearRules() {
 
 async function clearRules() {
   try {
-    const res = await fetch('/api/rules/clear', { method: 'POST' });
+    const res = await fetch('/api/custom_rules/clear', { method: 'POST' });
     const data = await res.json();
     if (data.success) {
       showToast('规则已清除', 'success');
@@ -2907,7 +2992,7 @@ async function runTestRule() {
     conditions
   };
   try {
-    const res = await fetch('/api/rules/test', {
+    const res = await fetch('/api/custom_rules/test', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rule, path }),
@@ -2918,12 +3003,12 @@ async function runTestRule() {
     const conditionResults = document.getElementById('testConditionResults');
     if (data.success) {
       result.style.display = 'block';
-      if (data.hit) {
+      if (data.result.hit) {
         badge.innerHTML = '<span class="badge badge-risk-low">✅ 规则命中</span>';
       } else {
         badge.innerHTML = '<span class="badge badge-risk-high">❌ 规则未命中</span>';
       }
-      conditionResults.innerHTML = data.condition_results.map(cr => `
+      conditionResults.innerHTML = data.result.condition_results.map(cr => `
         <div style="padding: 6px 10px; border-radius: var(--radius-sm); ${cr.hit ? 'background: var(--accent-green-light); color: var(--accent-green);' : 'background: var(--accent-red-light); color: var(--accent-red);'}">
           ${cr.condition.type}: ${cr.condition.operator} "${cr.condition.value}" → ${cr.hit ? '✅' : '❌'}
         </div>
@@ -3005,15 +3090,19 @@ async function addPersonalDir() {
 
 async function removePersonalDir(index) {
   try {
-    const res = await fetch('/api/personal_dirs', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ index }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast('目录已移除', 'success');
-      loadPersonalDirs();
+    const dirs = document.querySelectorAll('#personalDirList > div');
+    if (dirs[index]) {
+      const dirPath = dirs[index].querySelector('div').textContent.trim();
+      const res = await fetch('/api/personal_dirs', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: dirPath }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('目录已移除', 'success');
+        loadPersonalDirs();
+      }
     }
   } catch (e) {
     showToast('移除失败', 'error');
@@ -3043,14 +3132,14 @@ async function markSelectedDirsAsPersonal() {
   }
   const dirs = [...new Set(selected.map(f => f.path.split('\\').slice(0, -1).join('\\'))];
   try {
-    const res = await fetch('/api/personal_dirs/batch', {
+    const res = await fetch('/api/smart/learn/batch_positive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dirs }),
+      body: JSON.stringify({ dir_paths: dirs, all_file_paths: selected.map(f => f.path) }),
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`成功添加 ${dirs.length} 个目录到个人目录`, 'success');
+      showToast(`成功添加 ${dirs.length} 个目录到个人目录并学习`, 'success');
       clearSelection();
     } else {
       showToast(data.msg, 'error');
@@ -3071,34 +3160,39 @@ function closeSmartStats() {
 
 async function loadSmartStats() {
   try {
-    const res = await fetch('/api/intelligent/stats');
+    const res = await fetch('/api/smart/stats');
     const data = await res.json();
     const content = document.getElementById('smartStatsContent');
     const patterns = document.getElementById('learnedPatterns');
     content.innerHTML = `
       <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
-        <div style="font-size: 32px; font-weight: 700; color: var(--accent-blue); margin-bottom: 8px;">${data.total_scanned || 0}</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-blue); margin-bottom: 8px;">${data.stats.total_scanned || 0}</div>
         <div style="font-size: 13px; color: var(--text-muted);">总扫描文件</div>
       </div>
       <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
-        <div style="font-size: 32px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">${data.learned_patterns || 0}</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">${data.stats.learned_patterns || 0}</div>
         <div style="font-size: 13px; color: var(--text-muted);">学习到的模式</div>
       </div>
       <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
-        <div style="font-size: 32px; font-weight: 700; color: var(--accent-yellow); margin-bottom: 8px;">${data.personal_dirs || 0}</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-yellow); margin-bottom: 8px;">${data.stats.personal_dirs || 0}</div>
         <div style="font-size: 13px; color: var(--text-muted);">个人目录</div>
       </div>
       <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
-        <div style="font-size: 32px; font-weight: 700; color: var(--accent-purple); margin-bottom: 8px;">${data.custom_rules || 0}</div>
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-purple); margin-bottom: 8px;">${data.stats.custom_rules || 0}</div>
         <div style="font-size: 13px; color: var(--text-muted);">自定义规则</div>
       </div>
     `;
-    patterns.innerHTML = data.patterns ? data.patterns.map(p => `
-      <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
-        <div style="font-weight: 600;">${p.type}</div>
-        <div style="color: var(--text-muted);">${p.pattern}</div>
-      </div>
-    `).join('') : '<div style="text-align: center; color: var(--text-muted); padding: 40px 0;">暂无学习到的模式</div>';
+    // 加载学习到的模式
+    const patternsRes = await fetch('/api/smart/patterns');
+    const patternsData = await patternsRes.json();
+    if (patternsData.success) {
+      patterns.innerHTML = patternsData.patterns ? patternsData.patterns.map(p => `
+        <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
+          <div style="font-weight: 600;">${p.type}</div>
+          <div style="color: var(--text-muted);">${p.pattern}</div>
+        </div>
+      `).join('') : '<div style="text-align: center; color: var(--text-muted); padding: 40px 0;">暂无学习到的模式</div>';
+    }
   } catch (e) {
     console.error('加载统计失败', e);
   }
@@ -3109,7 +3203,76 @@ function refreshSmartStats() {
 }
 
 function openExportModal() {
-  showToast('功能开发中', 'info');
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal" style="width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <span>📋</span>
+          <span>导出文件清单</span>
+        </div>
+        <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); padding: 8px 12px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.8;">
+          选择要导出的文件范围，系统将生成一个 CSV 文件。
+        </p>
+        <div style="display: flex; gap: 12px; margin-bottom: 22px;">
+          <label class="filter-checkbox">
+            <input type="radio" name="exportScope" value="all" checked>
+            <span>导出所有文件</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="radio" name="exportScope" value="selected">
+            <span>仅导出选中文件</span>
+          </label>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center; margin-top: 24px;">
+          <button class="btn btn-primary" onclick="exportFileList()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; flex: 1;">
+            <span>💾</span>
+            <span>导出清单</span>
+          </button>
+          <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+            <span>✕</span>
+            <span>取消</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function exportFileList() {
+  const scope = document.querySelector('input[name="exportScope"]:checked').value;
+  let ids = [];
+  if (scope === 'selected') {
+    ids = Array.from(State.selectedIds);
+  }
+  try {
+    const res = await fetch('/api/file/export', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`成功导出 ${data.count} 个文件到 ${data.path}`, 'success');
+      // 打开导出文件所在目录
+      fetch('/api/file/open_dir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: data.path, is_dir: false }),
+      });
+    } else {
+      showToast('导出失败', 'error');
+    }
+  } catch (e) {
+    showToast('导出失败', 'error');
+  }
+  // 关闭模态框
+  document.querySelector('.modal-overlay').remove();
 }
 </script>
 </body>
