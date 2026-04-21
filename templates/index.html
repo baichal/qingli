@@ -521,35 +521,60 @@ body {
 }
 
 .filter-select {
-  background: var(--bg-tertiary);
-  border: 2px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  padding: 11px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  font-family: inherit;
-  font-weight: 500;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  padding-right: 40px;
-  transition: all var(--transition-normal);
-}
+    background: var(--bg-tertiary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 11px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    font-family: inherit;
+    font-weight: 500;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+    transition: all var(--transition-normal);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
 
-.filter-select:hover {
-  border-color: var(--border);
-  background: var(--bg-secondary);
-}
+  .filter-select:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
 
-.filter-select:focus {
-  border-color: var(--accent-blue);
-  background: var(--bg-secondary);
-  box-shadow: 0 0 0 4px var(--accent-blue-light);
-}
+  .filter-select:focus {
+    border-color: var(--accent-blue);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 0 4px var(--accent-blue-light);
+  }
+
+  .filter-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    margin: 4px 8px;
+  }
+
+  .filter-select option:hover {
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    color: var(--accent-blue);
+    transform: translateX(4px);
+  }
+
+  .filter-select option:checked {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    color: white;
+    font-weight: 600;
+  }
 
 .filter-checkbox {
   display: flex;
@@ -568,14 +593,46 @@ body {
 .filter-checkbox:hover {
   background: var(--bg-secondary);
   border-color: var(--border);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .filter-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: var(--accent-blue);
-}
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent-blue);
+    appearance: none;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-normal);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .filter-checkbox input[type="checkbox"]:hover {
+    border-color: var(--accent-blue);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+  }
+
+  .filter-checkbox input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .filter-checkbox input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+  }
 
 .toolbar-actions {
   display: flex;
@@ -714,21 +771,33 @@ body {
 .file-table tbody tr {
   transition: all var(--transition-normal);
   background: var(--bg-secondary);
+  border-left: 3px solid transparent;
 }
 
 .file-table tbody tr:hover {
   background: var(--bg-tertiary);
   transform: scale(1.005);
+  border-left-color: var(--accent-blue);
 }
 
 .file-table tbody tr.selected {
-  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
-  border-left: 3px solid var(--accent-blue);
-}
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    border-left: 4px solid var(--accent-blue);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transform: scale(1.01);
+    z-index: 1;
+    position: relative;
+  }
+
+  .file-table tbody tr.selected:hover {
+    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    border-left-color: var(--accent-purple);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  }
 
 .file-table tbody tr.preview-active {
   background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-  border-left: 3px solid var(--accent-blue);
+  border-left-color: var(--accent-blue);
 }
 
 .file-cell {
@@ -757,6 +826,13 @@ body {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .badge-risk-high {
@@ -988,6 +1064,7 @@ body {
   outline: none;
   font-family: inherit;
   transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
 }
 
 .form-group input:focus,
@@ -996,6 +1073,7 @@ body {
   border-color: var(--accent-blue);
   background: var(--bg-secondary);
   box-shadow: 0 0 0 4px var(--accent-blue-light);
+  transform: translateY(-1px);
 }
 
 .form-group textarea {
@@ -1017,6 +1095,7 @@ body {
   text-align: center;
   cursor: pointer;
   transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
 }
 
 .drive-card:hover {
@@ -1057,6 +1136,7 @@ body {
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.9;
+  box-shadow: var(--shadow-sm);
 }
 
 .info-box strong {
@@ -1087,6 +1167,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: all var(--transition-normal);
 }
 
 @keyframes slideInRight {
@@ -1098,6 +1179,11 @@ body {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+.toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .toast-success {
@@ -1127,6 +1213,12 @@ body {
   box-shadow: var(--shadow-xl);
   z-index: 1000;
   animation: slideInRight 0.3s ease;
+  transition: all var(--transition-normal);
+}
+
+.file-notification:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .notification-icon {
@@ -1161,6 +1253,7 @@ body {
 
 .notification-close:hover {
   color: var(--text-primary);
+  transform: scale(1.1);
 }
 
 /* ===== Custom Scrollbar ===== */
@@ -1171,6 +1264,7 @@ body {
 
 ::-webkit-scrollbar-track {
   background: var(--bg-tertiary);
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -1181,6 +1275,7 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+  transform: scale(1.1);
 }
 
 /* ===== Responsive Design ===== */
@@ -1296,8 +1391,7 @@ body {
           </div>
         </div>
         <div class="sidebar-footer">
-          <button class="btn btn-sm" style="width: 100%; justify-content: center; gap: 8px; background: var(--accent-blue); color: white;"
-                  onclick="openRuleManager()">
+          <button class="btn btn-sm" style="width: 100%; justify-content: center; gap: 8px; background: var(--accent-blue); color: white;" onclick="openRuleManager()">
             <span>⚙️</span>
             <span>自定义分类规则</span>
           </button>
@@ -1310,8 +1404,7 @@ body {
         <div class="toolbar">
           <div class="search-box">
             <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="搜索文件名或路径..."
-                   oninput="debounceSearch(this.value)">
+            <input type="text" id="searchInput" placeholder="搜索文件名或路径..." oninput="debounceSearch(this.value)">
           </div>
 
           <div class="filter-group">
@@ -1405,7 +1498,29 @@ body {
               <thead>
                 <tr>
                   <th style="width: 44px;">
-                    <input type="checkbox" id="checkAll" onchange="toggleAll(this)">
+                    <input type="checkbox" id="checkAll" onchange="toggleAll(this)" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue); appearance: none; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); transition: all var(--transition-normal); position: relative; box-shadow: var(--shadow-sm);">
+                    <style>
+                      #checkAll:hover {
+                        border-color: var(--accent-blue);
+                        transform: scale(1.1);
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+                      }
+                      #checkAll:checked {
+                        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+                        border-color: var(--accent-blue);
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+                      }
+                      #checkAll:checked::after {
+                        content: '✓';
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        color: white;
+                        font-size: 14px;
+                        font-weight: bold;
+                      }
+                    </style>
                   </th>
                   <th>文件名</th>
                   <th style="width: 130px;">分类</th>
@@ -1700,4 +1815,1302 @@ E:\archive"></textarea>
 </div>
 
 <!-- Smart Stats Modal -->
-<div class="modal-overlay" id="smartStatsModal"
+<div class="modal-overlay" id="smartStatsModal" style="display: none;">
+  <div class="modal" style="width: 640px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span>🧠</span>
+        <span>智能识别统计</span>
+      </div>
+      <button class="btn btn-sm" onclick="closeSmartStats()" style="background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border);">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="smartStatsContent" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px;">
+      </div>
+      <div style="margin-top: 20px;">
+        <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">
+          📊 学习到的模式
+        </div>
+        <div id="learnedPatterns" style="max-height: 220px; overflow-y: auto; padding: 16px; background: var(--bg-tertiary); border-radius: var(--radius-md);">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-sm" onclick="refreshSmartStats()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+        <span>🔄</span>
+        <span>刷新</span>
+      </button>
+      <button class="btn btn-sm" onclick="closeSmartStats()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
+        <span>✕</span>
+        <span>关闭</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const State = {
+  allResults: [],
+  selectedIds: new Set(),
+  currentCategory: 'all',
+  currentRisk: '',
+  currentKeyword: '',
+  currentTimeRange: 'all',
+  currentPersonalOnly: false,
+  currentSuspectedOnly: false,
+  currentPage: 1,
+  pageSize: 100,
+  totalCount: 0,
+  scanning: false,
+  previewOpen: false,
+  activeRowId: null,
+  summaryData: [],
+  pendingDelete: { type: '', paths: [], ids: [] },
+};
+
+let sseSource = null;
+let searchTimer = null;
+let refreshTimer = null;
+let backgroundRefreshTimer = null;
+let isManualRefresh = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadSummary();
+  toggleCustomDateInputs();
+  startBackgroundRefresh();
+});
+
+function startBackgroundRefresh() {
+  if (backgroundRefreshTimer) {
+    clearInterval(backgroundRefreshTimer);
+  }
+  backgroundRefreshTimer = setInterval(() => {
+    if (!State.scanning) {
+      refreshResults();
+    }
+  }, 5000);
+}
+
+function stopBackgroundRefresh() {
+  if (backgroundRefreshTimer) {
+    clearInterval(backgroundRefreshTimer);
+    backgroundRefreshTimer = null;
+  }
+}
+
+function showRemovedFilesNotification(removedCount) {
+  if (removedCount === 0) return;
+  let notification = document.getElementById('fileChangeNotification');
+  if (notification) {
+    notification.remove();
+  }
+  notification = document.createElement('div');
+  notification.id = 'fileChangeNotification';
+  notification.className = 'file-notification';
+  notification.innerHTML = `
+    <div class="notification-icon">🗑️</div>
+    <div class="notification-content">
+      <div class="notification-title">已删除的文件</div>
+      <div class="notification-desc">本次刷新发现 ${removedCount} 个文件已被删除，已自动从列表中移除</div>
+    </div>
+    <button class="notification-close" onclick="clearFileChangeNotification()">✕</button>
+  `;
+  document.body.appendChild(notification);
+  setTimeout(() => {
+    clearFileChangeNotification();
+  }, 5000);
+}
+
+function clearFileChangeNotification() {
+  const notification = document.getElementById('fileChangeNotification');
+  if (notification) {
+    notification.remove();
+  }
+}
+
+async function openScanConfig() {
+  if (State.scanning) return;
+  document.getElementById('scanModal').style.display = 'flex';
+  document.getElementById('resumeCheck').checked = false;
+  await checkResume();
+  await loadDrives();
+}
+
+async function checkResume() {
+  try {
+    const res = await fetch('/api/scan/check_resume');
+    const data = await res.json();
+    const resumeInfo = document.getElementById('resumeInfo');
+    const resumeDetails = document.getElementById('resumeDetails');
+    if (data.can_resume && data.resume_data) {
+      resumeInfo.style.display = 'block';
+      const rd = data.resume_data;
+      resumeDetails.innerHTML = `
+        <div>📅 中断时间：${rd.datetime || '未知'}</div>
+        <div>📁 已扫描：${rd.scanned_files || 0} 个文件，${rd.scanned_dirs || 0} 个目录</div>
+        <div>✅ 已匹配：${rd.matched_files || 0} 个文件</div>
+        ${rd.current_drive ? `<div>💾 当前位置：${rd.current_drive}</div>` : ''}
+      `;
+    } else {
+      resumeInfo.style.display = 'none';
+    }
+  } catch (e) {
+    console.error('检查恢复进度失败', e);
+  }
+}
+
+async function clearResumeProgress() {
+  try {
+    await fetch('/api/scan/clear_resume', { method: 'POST' });
+    document.getElementById('resumeInfo').style.display = 'none';
+    showToast('已清除进度', 'success');
+  } catch (e) {
+    showToast('清除进度失败', 'error');
+  }
+}
+
+function closeScanModal() {
+  document.getElementById('scanModal').style.display = 'none';
+}
+
+async function loadDrives() {
+  const grid = document.getElementById('driveGrid');
+  grid.innerHTML = '加载中...';
+  try {
+    const res = await fetch('/api/drives');
+    const data = await res.json();
+    grid.innerHTML = '';
+    data.drives.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'drive-card selected';
+      card.dataset.drive = d.drive;
+      card.innerHTML = `
+        <div class="drive-letter">${d.letter}:</div>
+        <div class="drive-info">${d.free_human} 可用</div>
+      `;
+      card.onclick = () => card.classList.toggle('selected');
+      grid.appendChild(card);
+    });
+  } catch (e) {
+    grid.innerHTML = '<span style="color: var(--accent-red);">加载盘符失败</span>';
+  }
+}
+
+async function startScan() {
+  const resumeCheck = document.getElementById('resumeCheck');
+  const resume = resumeCheck ? resumeCheck.checked : false;
+  if (!resume) {
+    const selectedCards = document.querySelectorAll('.drive-card.selected');
+    const drives = Array.from(selectedCards).map(c => c.dataset.drive);
+    if (drives.length === 0) {
+      showToast('请至少选择一个盘符', 'error');
+      return;
+    }
+  }
+  const excludeText = document.getElementById('excludeDirs').value.trim();
+  const extraExclude = excludeText ? excludeText.split('\n').map(s => s.trim()).filter(s => s) : [];
+  closeScanModal();
+  if (!resume) {
+    State.allResults = [];
+    State.selectedIds.clear();
+    State.currentPage = 1;
+    State.totalCount = 0;
+    renderTable([]);
+    updateSelectionBar();
+  }
+  const selectedCards = document.querySelectorAll('.drive-card.selected');
+  const drives = Array.from(selectedCards).map(c => c.dataset.drive);
+  const fastModeCheck = document.getElementById('fastModeCheck');
+  const fastMode = fastModeCheck ? fastModeCheck.checked : false;
+  const res = await fetch('/api/scan/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      drives: drives.length > 0 ? drives : null,
+      extra_exclude: extraExclude,
+      resume: resume,
+      fast_mode: fastMode
+    }),
+  });
+  const data = await res.json();
+  if (!data.success) {
+    showToast(data.msg, 'error');
+    return;
+  }
+  State.scanning = true;
+  setUIScanning(true);
+  startSSE();
+  refreshTimer = setInterval(refreshResults, 3000);
+}
+
+async function pauseScan() {
+  const res = await fetch('/api/scan/pause', { method: 'POST' });
+  const data = await res.json();
+  if (data.success) {
+    showToast('已暂停扫描', 'success');
+  }
+}
+
+async function resumeScan() {
+  const res = await fetch('/api/scan/resume', { method: 'POST' });
+  const data = await res.json();
+  if (data.success) {
+    showToast('已继续扫描', 'success');
+  }
+}
+
+function stopScan() {
+  fetch('/api/scan/stop', { method: 'POST' });
+  const btnScan = document.getElementById('btnScan');
+  const btnPause = document.getElementById('btnPause');
+  const btnResume = document.getElementById('btnResume');
+  const btnStop = document.getElementById('btnStop');
+  btnScan.style.display = '';
+  btnPause.style.display = 'none';
+  btnResume.style.display = 'none';
+  btnStop.style.display = 'none';
+  cleanupScan();
+}
+
+function cleanupScan() {
+  State.scanning = false;
+  setUIScanning(false);
+  if (sseSource) {
+    sseSource.close();
+    sseSource = null;
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressBarContainer = document.getElementById('progressBarContainer');
+  const progressStats = document.getElementById('progressStats');
+  statusDot.className = 'status-dot';
+  statusText.textContent = '扫描已停止';
+  progressBarContainer.style.display = 'none';
+  progressStats.style.display = 'none';
+  refreshResults();
+  loadSummary();
+}
+
+function startSSE() {
+  if (sseSource) sseSource.close();
+  sseSource = new EventSource('/api/scan/progress');
+  sseSource.onmessage = (e) => {
+    const payload = JSON.parse(e.data);
+    const { progress, finished } = payload;
+    updateProgressUI(progress);
+    if (finished) {
+      cleanupScan();
+      refreshResults();
+      loadSummary();
+      showToast(`扫描完成！共发现 ${progress.matched_files} 个相关文件`, 'success');
+    }
+  };
+  sseSource.onerror = () => {
+    if (State.scanning) {
+      cleanupScan();
+      loadSummary();
+    }
+  };
+}
+
+function updateProgressUI(p) {
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressStats = document.getElementById('progressStats');
+  const progressFill = document.getElementById('progressFill');
+  const progressBarContainer = document.getElementById('progressBarContainer');
+  const btnScan = document.getElementById('btnScan');
+  const btnPause = document.getElementById('btnPause');
+  const btnResume = document.getElementById('btnResume');
+  const btnStop = document.getElementById('btnStop');
+  if (p.status === 'running') {
+    statusDot.className = 'status-dot scanning';
+    btnScan.style.display = 'none';
+    btnPause.style.display = '';
+    btnResume.style.display = 'none';
+    btnStop.style.display = '';
+  } else if (p.status === 'paused') {
+    statusDot.className = 'status-dot';
+    btnScan.style.display = 'none';
+    btnPause.style.display = 'none';
+    btnResume.style.display = '';
+    btnStop.style.display = '';
+  }
+  if (p.total_files > 0) {
+    const percent = Math.round((p.scanned_files / p.total_files) * 100);
+    progressFill.style.width = `${percent}%`;
+  }
+  progressBarContainer.style.display = 'block';
+  progressStats.style.display = 'block';
+  const path = p.current_path || '';
+  const shortPath = path.length > 50 ? '...' + path.slice(-47) : path;
+  statusText.textContent = shortPath || '正在扫描...';
+  progressStats.textContent = `${p.scanned_files} / ${p.total_files || '?'}`;
+}
+
+function setUIScanning(isScanning) {
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const progressBarContainer = document.getElementById('progressBarContainer');
+  const progressStats = document.getElementById('progressStats');
+  const btnScan = document.getElementById('btnScan');
+  const btnPause = document.getElementById('btnPause');
+  const btnResume = document.getElementById('btnResume');
+  const btnStop = document.getElementById('btnStop');
+  if (isScanning) {
+    statusDot.className = 'status-dot scanning';
+    statusText.textContent = '正在扫描...';
+    progressBarContainer.style.display = 'block';
+    progressStats.style.display = 'block';
+    btnScan.style.display = 'none';
+    btnPause.style.display = '';
+    btnResume.style.display = 'none';
+    btnStop.style.display = '';
+  } else {
+    statusDot.className = 'status-dot';
+    statusText.textContent = '准备就绪';
+    progressBarContainer.style.display = 'none';
+    progressStats.style.display = 'none';
+    btnScan.style.display = '';
+    btnPause.style.display = 'none';
+    btnResume.style.display = 'none';
+    btnStop.style.display = 'none';
+  }
+}
+
+async function refreshResults() {
+  try {
+    const res = await fetch('/api/results');
+    const data = await res.json();
+    const oldPaths = new Set(State.allResults.map(f => f.path));
+    const newPaths = new Set(data.results.map(f => f.path));
+    const removedCount = Array.from(oldPaths).filter(p => !newPaths.has(p)).length;
+    if (removedCount > 0) {
+      showRemovedFilesNotification(removedCount);
+    }
+    State.allResults = data.results;
+    State.totalCount = data.total_count;
+    if (State.totalCount === 0) {
+      document.getElementById('emptyState').style.display = 'flex';
+      document.getElementById('fileTable').style.display = 'none';
+      document.getElementById('paginationBar').style.display = 'none';
+    } else {
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('fileTable').style.display = 'table';
+      document.getElementById('paginationBar').style.display = 'flex';
+    }
+    renderTable(getFilteredResults());
+    updateSidebarCounts();
+    updateSelectionBar();
+  } catch (e) {
+    console.error('刷新结果失败', e);
+  }
+}
+
+function getFilteredResults() {
+  let filtered = State.allResults;
+  if (State.currentCategory !== 'all') {
+    filtered = filtered.filter(f => f.category === State.currentCategory);
+  }
+  if (State.currentRisk) {
+    filtered = filtered.filter(f => f.risk === State.currentRisk);
+  }
+  if (State.currentKeyword) {
+    const keyword = State.currentKeyword.toLowerCase();
+    filtered = filtered.filter(f => 
+      f.name.toLowerCase().includes(keyword) || 
+      f.path.toLowerCase().includes(keyword)
+    );
+  }
+  if (State.currentTimeRange === '1month') {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= monthAgo);
+  } else if (State.currentTimeRange === '3months') {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= threeMonthsAgo);
+  } else if (State.currentTimeRange === '1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) >= yearAgo);
+  } else if (State.currentTimeRange === 'older1year') {
+    const yearAgo = new Date();
+    yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+    filtered = filtered.filter(f => new Date(f.modified_time) < yearAgo);
+  } else if (State.currentTimeRange === 'custom') {
+    const start = document.getElementById('timeStart').value;
+    const end = document.getElementById('timeEnd').value;
+    if (start) {
+      const startDate = new Date(start);
+      filtered = filtered.filter(f => new Date(f.modified_time) >= startDate);
+    }
+    if (end) {
+      const endDate = new Date(end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(f => new Date(f.modified_time) <= endDate);
+    }
+  }
+  if (State.currentPersonalOnly) {
+    filtered = filtered.filter(f => f.is_personal_dir === true);
+  }
+  if (State.currentSuspectedOnly) {
+    filtered = filtered.filter(f => f.is_personal === true && f.is_personal_dir !== true);
+  }
+  return filtered;
+}
+
+function renderTable(results) {
+  const tbody = document.getElementById('fileTableBody');
+  const pageInfo = document.getElementById('pageInfo');
+  const start = (State.currentPage - 1) * State.pageSize;
+  const end = start + State.pageSize;
+  const paginated = results.slice(start, end);
+  tbody.innerHTML = '';
+  paginated.forEach((file, index) => {
+    const tr = document.createElement('tr');
+    tr.dataset.id = file.id;
+    tr.dataset.path = file.path;
+    tr.onclick = (e) => {
+      if (!e.target.closest('input[type="checkbox"]') && !e.target.closest('.file-actions')) {
+        togglePreview(file);
+      }
+    };
+    tr.innerHTML = `
+      <td>
+        <input type="checkbox" class="file-check" data-id="${file.id}" ${State.selectedIds.has(file.id) ? 'checked' : ''} onchange="toggleSelect('${file.id}')" style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-blue); appearance: none; background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); transition: all var(--transition-normal); position: relative; box-shadow: var(--shadow-sm);">
+        <style>
+          .file-check:hover {
+            border-color: var(--accent-blue);
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+          }
+          .file-check:checked {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-color: var(--accent-blue);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+          }
+          .file-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+          }
+        </style>
+      </td>
+      <td>
+        <div class="file-cell">
+          <div class="file-name">${file.name}</div>
+          <div class="file-path">${file.path}</div>
+        </div>
+      </td>
+      <td>
+        <span class="badge">
+          ${file.icon || '📄'}
+          ${file.category}
+        </span>
+      </td>
+      <td>
+        <span class="badge badge-risk-${file.risk}">
+          ${file.risk === 'high' ? '🔴' : file.risk === 'medium' ? '🟡' : '🟢'}
+          ${file.risk === 'high' ? '高' : file.risk === 'medium' ? '中' : '低'}
+        </span>
+      </td>
+      <td>${file.size_human}</td>
+      <td>${file.modified_time}</td>
+      <td>
+        <div class="file-actions">
+          <button class="btn btn-sm" onclick="previewFile('${file.id}')" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
+            👁️
+          </button>
+          <button class="btn btn-sm" onclick="deleteFile('${file.path}', '${file.id}', 'trash')" style="background: var(--accent-yellow-light); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); padding: 6px 10px;">
+            📦
+          </button>
+          <button class="btn btn-sm" onclick="deleteFile('${file.path}', '${file.id}', 'permanent')" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+            🗑️
+          </button>
+        </div>
+      </td>
+    `;
+    if (State.activeRowId === file.id) {
+      tr.classList.add('preview-active');
+    }
+    if (State.selectedIds.has(file.id)) {
+      tr.classList.add('selected');
+    }
+    tbody.appendChild(tr);
+  });
+  pageInfo.textContent = `第 ${State.currentPage} 页，共 ${Math.ceil(results.length / State.pageSize)} 页，共 ${results.length} 个文件`;
+  document.getElementById('btnPrev').disabled = State.currentPage === 1;
+  document.getElementById('btnNext').disabled = end >= results.length;
+}
+
+function changePage(delta) {
+  State.currentPage += delta;
+  if (State.currentPage < 1) State.currentPage = 1;
+  renderTable(getFilteredResults());
+}
+
+function filterCategory(category, element) {
+  State.currentCategory = category;
+  State.currentPage = 1;
+  document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+  element.classList.add('active');
+  renderTable(getFilteredResults());
+}
+
+function applyFilters() {
+  State.currentRisk = document.getElementById('riskFilter').value;
+  State.currentKeyword = document.getElementById('searchInput').value;
+  State.currentTimeRange = document.getElementById('timeRangeFilter').value;
+  State.currentPersonalOnly = document.getElementById('personalOnly').checked;
+  State.currentSuspectedOnly = document.getElementById('suspectedOnly').checked;
+  State.currentPage = 1;
+  renderTable(getFilteredResults());
+}
+
+function debounceSearch(value) {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    State.currentKeyword = value;
+    State.currentPage = 1;
+    renderTable(getFilteredResults());
+  }, 300);
+}
+
+function toggleCustomDateInputs() {
+  const timeRange = document.getElementById('timeRangeFilter').value;
+  const customInputs = document.getElementById('customDateInputs');
+  customInputs.style.display = timeRange === 'custom' ? 'flex' : 'none';
+}
+
+function toggleSelect(id) {
+  if (State.selectedIds.has(id)) {
+    State.selectedIds.delete(id);
+  } else {
+    State.selectedIds.add(id);
+  }
+  updateSelectionBar();
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  if (row) {
+    row.classList.toggle('selected');
+  }
+}
+
+function toggleAll(checkbox) {
+  const checked = checkbox.checked;
+  State.selectedIds.clear();
+  if (checked) {
+    const filtered = getFilteredResults();
+    filtered.forEach(file => State.selectedIds.add(file.id));
+  }
+  document.querySelectorAll('.file-check').forEach(check => check.checked = checked);
+  document.querySelectorAll('tr[data-id]').forEach(row => {
+    row.classList.toggle('selected', checked);
+  });
+  updateSelectionBar();
+}
+
+function toggleSelectAll() {
+  const checkbox = document.getElementById('checkAll');
+  checkbox.checked = !checkbox.checked;
+  toggleAll(checkbox);
+}
+
+function updateSelectionBar() {
+  const bar = document.getElementById('selectionBar');
+  const count = document.getElementById('selCount');
+  const selectedCount = State.selectedIds.size;
+  if (selectedCount > 0) {
+    bar.classList.add('show');
+    count.textContent = `已选择 ${selectedCount} 个文件`;
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function clearSelection() {
+  State.selectedIds.clear();
+  document.getElementById('checkAll').checked = false;
+  document.querySelectorAll('.file-check').forEach(check => check.checked = false);
+  document.querySelectorAll('tr[data-id]').forEach(row => row.classList.remove('selected'));
+  updateSelectionBar();
+}
+
+function deleteFile(path, id, type) {
+  State.pendingDelete = { type, paths: [path], ids: [id] };
+  openConfirmModal(type);
+}
+
+function deleteSelected(type) {
+  const selected = getFilteredResults().filter(f => State.selectedIds.has(f.id));
+  if (selected.length === 0) return;
+  State.pendingDelete = {
+    type,
+    paths: selected.map(f => f.path),
+    ids: selected.map(f => f.id)
+  };
+  openConfirmModal(type);
+}
+
+function openConfirmModal(type) {
+  const modal = document.getElementById('confirmModal');
+  const title = document.getElementById('confirmTitle');
+  const desc = document.getElementById('confirmDesc');
+  const icon = document.getElementById('confirmIcon');
+  const fileList = document.getElementById('confirmFileList');
+  const confirmBtn = document.getElementById('confirmBtn');
+  if (type === 'trash') {
+    title.textContent = '确认移至回收站';
+    desc.textContent = `确定要将 ${State.pendingDelete.paths.length} 个文件移至回收站吗？`;
+    icon.textContent = '📦';
+    confirmBtn.style.background = 'linear-gradient(135deg, var(--accent-yellow) 0%, #d97706 100%)';
+  } else {
+    title.textContent = '确认永久删除';
+    desc.textContent = `确定要永久删除 ${State.pendingDelete.paths.length} 个文件吗？此操作不可恢复！`;
+    icon.textContent = '⚠️';
+    confirmBtn.style.background = 'linear-gradient(135deg, var(--accent-red) 0%, #dc2626 100%)';
+  }
+  fileList.innerHTML = State.pendingDelete.paths.slice(0, 5).map(p => `<div style="padding: 4px 0; border-bottom: 1px solid var(--border);">${p}</div>`).join('');
+  if (State.pendingDelete.paths.length > 5) {
+    fileList.innerHTML += `<div style="padding: 8px 0; color: var(--text-muted); font-style: italic;">... 等 ${State.pendingDelete.paths.length} 个文件</div>`;
+  }
+  modal.style.display = 'flex';
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').style.display = 'none';
+  State.pendingDelete = { type: '', paths: [], ids: [] };
+}
+
+async function executeDelete() {
+  const { type, paths, ids } = State.pendingDelete;
+  closeConfirm();
+  try {
+    const res = await fetch('/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths, type }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`成功 ${type === 'trash' ? '移至回收站' : '永久删除'} ${paths.length} 个文件`, 'success');
+      ids.forEach(id => State.selectedIds.delete(id));
+      await refreshResults();
+      updateSelectionBar();
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch (e) {
+    showToast('操作失败', 'error');
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+    <span>${message}</span>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+function togglePreview(file) {
+  State.activeRowId = file.id;
+  const panel = document.getElementById('previewPanel');
+  const title = document.getElementById('previewTitle');
+  const meta = document.getElementById('previewMeta');
+  const body = document.getElementById('previewBody');
+  const toggleIcon = document.getElementById('previewToggleIcon');
+  title.innerHTML = `
+    <span>${file.icon || '📄'}</span>
+    <span>${file.name}</span>
+  `;
+  meta.innerHTML = `
+    <span>大小: ${file.size_human}</span>
+    <span>修改时间: ${file.modified_time}</span>
+    <span>分类: ${file.category}</span>
+  `;
+  body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">加载中...</div></div>';
+  panel.classList.remove('collapsed');
+  toggleIcon.textContent = '▲';
+  State.previewOpen = true;
+  previewFile(file.id);
+  document.querySelectorAll('tr[data-id]').forEach(row => {
+    row.classList.toggle('preview-active', row.dataset.id === file.id);
+  });
+}
+
+async function previewFile(id) {
+  try {
+    const res = await fetch(`/api/preview/${id}`);
+    const data = await res.json();
+    const body = document.getElementById('previewBody');
+    if (data.success) {
+      if (data.preview) {
+        body.innerHTML = `<div class="preview-content"><pre>${escapeHtml(data.preview)}</pre></div>`;
+      } else {
+        body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--text-muted); padding: 40px 0;">无法预览此文件</div></div>';
+      }
+    } else {
+      body.innerHTML = `<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">${data.msg}</div></div>`;
+    }
+  } catch (e) {
+    const body = document.getElementById('previewBody');
+    body.innerHTML = '<div class="preview-content"><div style="text-align: center; color: var(--accent-red); padding: 40px 0;">预览失败</div></div>';
+  }
+}
+
+function togglePreview() {
+  const panel = document.getElementById('previewPanel');
+  const toggleIcon = document.getElementById('previewToggleIcon');
+  if (State.previewOpen) {
+    panel.classList.add('collapsed');
+    toggleIcon.textContent = '▼';
+    State.previewOpen = false;
+  } else {
+    panel.classList.remove('collapsed');
+    toggleIcon.textContent = '▲';
+    State.previewOpen = true;
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+async function loadSummary() {
+  try {
+    const res = await fetch('/api/summary');
+    const data = await res.json();
+    State.summaryData = data.summary;
+    updateSidebarCounts();
+  } catch (e) {
+    console.error('加载摘要失败', e);
+  }
+}
+
+function updateSidebarCounts() {
+  const sidebarList = document.getElementById('sidebarList');
+  const categories = {};
+  State.allResults.forEach(file => {
+    if (!categories[file.category]) {
+      categories[file.category] = 0;
+    }
+    categories[file.category]++;
+  });
+  let html = `
+    <div class="sidebar-item ${State.currentCategory === 'all' ? 'active' : ''}" data-key="all" onclick="filterCategory('all', this)">
+      <div class="sidebar-icon">📁</div>
+      <div class="sidebar-label">全部文件</div>
+      <div class="sidebar-badge" id="badge-all">${State.allResults.length}</div>
+    </div>
+  `;
+  Object.entries(categories).forEach(([category, count]) => {
+    const icon = getCategoryIcon(category);
+    html += `
+      <div class="sidebar-item ${State.currentCategory === category ? 'active' : ''}" data-key="${category}" onclick="filterCategory('${category}', this)">
+        <div class="sidebar-icon">${icon}</div>
+        <div class="sidebar-label">${category}</div>
+        <div class="sidebar-badge">${count}</div>
+      </div>
+    `;
+  });
+  sidebarList.innerHTML = html;
+}
+
+function getCategoryIcon(category) {
+  const icons = {
+    '文档': '📄',
+    '图片': '🖼️',
+    '视频': '🎥',
+    '音频': '🎵',
+    '压缩包': '📦',
+    '可执行文件': '⚙️',
+    '系统文件': '💻',
+    '个人目录文件': '🏠',
+    '疑似个人文件': '❓'
+  };
+  return icons[category] || '📁';
+}
+
+function openRuleManager() {
+  document.getElementById('ruleManagerModal').style.display = 'flex';
+  loadRules();
+}
+
+function closeRuleManager() {
+  document.getElementById('ruleManagerModal').style.display = 'none';
+}
+
+async function loadRules() {
+  try {
+    const res = await fetch('/api/rules');
+    const data = await res.json();
+    const ruleList = document.getElementById('ruleListBody');
+    const ruleCount = document.getElementById('ruleCount');
+    ruleCount.textContent = data.rules.length;
+    ruleList.innerHTML = '';
+    data.rules.forEach((rule, index) => {
+      const ruleCard = document.createElement('div');
+      ruleCard.className = 'rule-card';
+      ruleCard.style = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; transition: all var(--transition-normal); box-shadow: var(--shadow-sm);';
+      ruleCard.onmouseover = () => {
+        ruleCard.style.transform = 'translateY(-2px)';
+        ruleCard.style.boxShadow = 'var(--shadow-md)';
+      };
+      ruleCard.onmouseout = () => {
+        ruleCard.style.transform = 'translateY(0)';
+        ruleCard.style.boxShadow = 'var(--shadow-sm)';
+      };
+      ruleCard.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">${rule.icon || '📁'}</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">${rule.name}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">${rule.conditions.length} 个条件</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm" onclick="openRuleEditor(${index})" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
+              ✏️
+            </button>
+            <button class="btn btn-sm" onclick="deleteRule(${index})" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+              🗑️
+            </button>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">风险等级: ${rule.risk === 'high' ? '🔴 高' : rule.risk === 'medium' ? '🟡 中' : '🟢 低'}</div>
+        <div style="font-size: 12px; color: var(--text-muted);">状态: ${rule.enabled ? '✅ 启用' : '❌ 禁用'}</div>
+      `;
+      ruleList.appendChild(ruleCard);
+    });
+  } catch (e) {
+    console.error('加载规则失败', e);
+  }
+}
+
+function openRuleEditor(index) {
+  const modal = document.getElementById('ruleEditorModal');
+  const title = document.getElementById('editorTitle');
+  if (index === null) {
+    title.innerHTML = '<span>➕</span><span>新增规则</span>';
+    document.getElementById('ruleName').value = '';
+    document.getElementById('ruleIcon').value = '📁';
+    document.getElementById('ruleRisk').value = 'medium';
+    document.getElementById('ruleEnabled').checked = true;
+    document.getElementById('logicOR').checked = true;
+    document.getElementById('logicAND').checked = false;
+    document.getElementById('ruleCaseSensitive').checked = false;
+    document.getElementById('conditionList').innerHTML = '';
+    addCondition();
+  } else {
+    title.innerHTML = '<span>✏️</span><span>编辑规则</span>';
+    const rule = State.summaryData.rules[index];
+    document.getElementById('ruleName').value = rule.name;
+    document.getElementById('ruleIcon').value = rule.icon || '📁';
+    document.getElementById('ruleRisk').value = rule.risk;
+    document.getElementById('ruleEnabled').checked = rule.enabled;
+    document.getElementById('logicOR').checked = rule.logic === 'OR';
+    document.getElementById('logicAND').checked = rule.logic === 'AND';
+    document.getElementById('ruleCaseSensitive').checked = rule.case_sensitive || false;
+    document.getElementById('conditionList').innerHTML = '';
+    rule.conditions.forEach(cond => {
+      addCondition(cond);
+    });
+  }
+  modal.style.display = 'flex';
+}
+
+function closeRuleEditor() {
+  document.getElementById('ruleEditorModal').style.display = 'none';
+}
+
+function addCondition(condition = null) {
+  const list = document.getElementById('conditionList');
+  const index = list.children.length;
+  const condDiv = document.createElement('div');
+  condDiv.className = 'condition-item';
+  condDiv.style = 'display: flex; gap: 10px; align-items: center; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md);';
+  condDiv.innerHTML = `
+    <select class="cond-type" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+      <option value="filename">文件名</option>
+      <option value="extension">扩展名</option>
+      <option value="path">路径</option>
+      <option value="content">内容</option>
+    </select>
+    <select class="cond-op" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+      <option value="contains">包含</option>
+      <option value="equals">等于</option>
+      <option value="starts_with">开头是</option>
+      <option value="ends_with">结尾是</option>
+      <option value="regex">正则</option>
+    </select>
+    <input type="text" class="cond-value" placeholder="输入值" style="flex: 2; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+    <button class="btn btn-sm" onclick="removeCondition(this)" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+      ✕
+    </button>
+  `;
+  if (condition) {
+    condDiv.querySelector('.cond-type').value = condition.type;
+    condDiv.querySelector('.cond-op').value = condition.operator;
+    condDiv.querySelector('.cond-value').value = condition.value;
+  }
+  list.appendChild(condDiv);
+}
+
+function removeCondition(button) {
+  const condDiv = button.closest('.condition-item');
+  if (condDiv) {
+    condDiv.remove();
+  }
+}
+
+async function saveRule() {
+  const name = document.getElementById('ruleName').value.trim();
+  if (!name) {
+    showEditorError('规则名称不能为空');
+    return;
+  }
+  const conditions = [];
+  document.querySelectorAll('.condition-item').forEach(item => {
+    const type = item.querySelector('.cond-type').value;
+    const op = item.querySelector('.cond-op').value;
+    const value = item.querySelector('.cond-value').value.trim();
+    if (value) {
+      conditions.push({ type, operator: op, value });
+    }
+  });
+  if (conditions.length === 0) {
+    showEditorError('至少需要一个匹配条件');
+    return;
+  }
+  const rule = {
+    name,
+    icon: document.getElementById('ruleIcon').value || '📁',
+    risk: document.getElementById('ruleRisk').value,
+    enabled: document.getElementById('ruleEnabled').checked,
+    logic: document.getElementById('logicOR').checked ? 'OR' : 'AND',
+    case_sensitive: document.getElementById('ruleCaseSensitive').checked,
+    conditions
+  };
+  try {
+    const res = await fetch('/api/rules', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rule),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则保存成功', 'success');
+      closeRuleEditor();
+      loadRules();
+    } else {
+      showEditorError(data.msg);
+    }
+  } catch (e) {
+    showEditorError('保存失败');
+  }
+}
+
+function showEditorError(message) {
+  const errors = document.getElementById('editorErrors');
+  errors.textContent = message;
+  errors.style.display = 'block';
+  setTimeout(() => {
+    errors.style.display = 'none';
+  }, 3000);
+}
+
+async function deleteRule(index) {
+  if (!confirm('确定要删除此规则吗？')) return;
+  try {
+    const res = await fetch('/api/rules', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ index }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则删除成功', 'success');
+      loadRules();
+    }
+  } catch (e) {
+    showToast('删除失败', 'error');
+  }
+}
+
+function confirmClearRules() {
+  if (confirm('确定要清除所有自定义规则吗？')) {
+    clearRules();
+  }
+}
+
+async function clearRules() {
+  try {
+    const res = await fetch('/api/rules/clear', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast('规则已清除', 'success');
+      loadRules();
+    }
+  } catch (e) {
+    showToast('清除失败', 'error');
+  }
+}
+
+async function runTestRule() {
+  const path = document.getElementById('testPath').value.trim();
+  if (!path) {
+    showEditorError('请输入测试路径');
+    return;
+  }
+  const name = document.getElementById('ruleName').value.trim();
+  const conditions = [];
+  document.querySelectorAll('.condition-item').forEach(item => {
+    const type = item.querySelector('.cond-type').value;
+    const op = item.querySelector('.cond-op').value;
+    const value = item.querySelector('.cond-value').value.trim();
+    if (value) {
+      conditions.push({ type, operator: op, value });
+    }
+  });
+  if (conditions.length === 0) {
+    showEditorError('至少需要一个匹配条件');
+    return;
+  }
+  const rule = {
+    name,
+    icon: document.getElementById('ruleIcon').value || '📁',
+    risk: document.getElementById('ruleRisk').value,
+    enabled: document.getElementById('ruleEnabled').checked,
+    logic: document.getElementById('logicOR').checked ? 'OR' : 'AND',
+    case_sensitive: document.getElementById('ruleCaseSensitive').checked,
+    conditions
+  };
+  try {
+    const res = await fetch('/api/rules/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rule, path }),
+    });
+    const data = await res.json();
+    const result = document.getElementById('testResult');
+    const badge = document.getElementById('testHitBadge');
+    const conditionResults = document.getElementById('testConditionResults');
+    if (data.success) {
+      result.style.display = 'block';
+      if (data.hit) {
+        badge.innerHTML = '<span class="badge badge-risk-low">✅ 规则命中</span>';
+      } else {
+        badge.innerHTML = '<span class="badge badge-risk-high">❌ 规则未命中</span>';
+      }
+      conditionResults.innerHTML = data.condition_results.map(cr => `
+        <div style="padding: 6px 10px; border-radius: var(--radius-sm); ${cr.hit ? 'background: var(--accent-green-light); color: var(--accent-green);' : 'background: var(--accent-red-light); color: var(--accent-red);'}">
+          ${cr.condition.type}: ${cr.condition.operator} "${cr.condition.value}" → ${cr.hit ? '✅' : '❌'}
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    showEditorError('测试失败');
+  }
+}
+
+function openPersonalDirManager() {
+  document.getElementById('personalDirModal').style.display = 'flex';
+  loadPersonalDirs();
+}
+
+function closePersonalDirManager() {
+  document.getElementById('personalDirModal').style.display = 'none';
+}
+
+async function loadPersonalDirs() {
+  try {
+    const res = await fetch('/api/personal_dirs');
+    const data = await res.json();
+    const list = document.getElementById('personalDirList');
+    list.innerHTML = '';
+    data.dirs.forEach((dir, index) => {
+      const dirItem = document.createElement('div');
+      dirItem.style = 'display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; transition: all var(--transition-normal);';
+      dirItem.onmouseover = () => {
+        dirItem.style.background = 'var(--bg-secondary)';
+        dirItem.style.transform = 'translateX(4px)';
+      };
+      dirItem.onmouseout = () => {
+        dirItem.style.background = 'var(--bg-tertiary)';
+        dirItem.style.transform = 'translateX(0)';
+      };
+      dirItem.innerHTML = `
+        <div style="font-size: 13px;">${dir}</div>
+        <button class="btn btn-sm" onclick="removePersonalDir(${index})" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 4px 8px;">
+          ✕
+        </button>
+      `;
+      list.appendChild(dirItem);
+    });
+  } catch (e) {
+    console.error('加载个人目录失败', e);
+  }
+}
+
+function browsePersonalDir() {
+  // 这里可以添加文件选择器逻辑
+  showToast('功能开发中', 'info');
+}
+
+async function addPersonalDir() {
+  const path = document.getElementById('newPersonalDir').value.trim();
+  if (!path) {
+    showToast('请输入目录路径', 'error');
+    return;
+  }
+  try {
+    const res = await fetch('/api/personal_dirs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('目录添加成功', 'success');
+      document.getElementById('newPersonalDir').value = '';
+      loadPersonalDirs();
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch (e) {
+    showToast('添加失败', 'error');
+  }
+}
+
+async function removePersonalDir(index) {
+  try {
+    const res = await fetch('/api/personal_dirs', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ index }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('目录已移除', 'success');
+      loadPersonalDirs();
+    }
+  } catch (e) {
+    showToast('移除失败', 'error');
+  }
+}
+
+async function clearAllPersonalDirs() {
+  if (confirm('确定要清空所有个人目录吗？')) {
+    try {
+      const res = await fetch('/api/personal_dirs/clear', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('个人目录已清空', 'success');
+        loadPersonalDirs();
+      }
+    } catch (e) {
+      showToast('清空失败', 'error');
+    }
+  }
+}
+
+async function markSelectedDirsAsPersonal() {
+  const selected = getFilteredResults().filter(f => State.selectedIds.has(f.id));
+  if (selected.length === 0) {
+    showToast('请先选择文件', 'error');
+    return;
+  }
+  const dirs = [...new Set(selected.map(f => f.path.split('\\').slice(0, -1).join('\\'))];
+  try {
+    const res = await fetch('/api/personal_dirs/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dirs }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`成功添加 ${dirs.length} 个目录到个人目录`, 'success');
+      clearSelection();
+    } else {
+      showToast(data.msg, 'error');
+    }
+  } catch (e) {
+    showToast('操作失败', 'error');
+  }
+}
+
+function openSmartStats() {
+  document.getElementById('smartStatsModal').style.display = 'flex';
+  loadSmartStats();
+}
+
+function closeSmartStats() {
+  document.getElementById('smartStatsModal').style.display = 'none';
+}
+
+async function loadSmartStats() {
+  try {
+    const res = await fetch('/api/intelligent/stats');
+    const data = await res.json();
+    const content = document.getElementById('smartStatsContent');
+    const patterns = document.getElementById('learnedPatterns');
+    content.innerHTML = `
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-blue); margin-bottom: 8px;">${data.total_scanned || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">总扫描文件</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">${data.learned_patterns || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">学习到的模式</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-yellow); margin-bottom: 8px;">${data.personal_dirs || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">个人目录</div>
+      </div>
+      <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; text-align: center;">
+        <div style="font-size: 32px; font-weight: 700; color: var(--accent-purple); margin-bottom: 8px;">${data.custom_rules || 0}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">自定义规则</div>
+      </div>
+    `;
+    patterns.innerHTML = data.patterns ? data.patterns.map(p => `
+      <div style="padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 13px;">
+        <div style="font-weight: 600;">${p.type}</div>
+        <div style="color: var(--text-muted);">${p.pattern}</div>
+      </div>
+    `).join('') : '<div style="text-align: center; color: var(--text-muted); padding: 40px 0;">暂无学习到的模式</div>';
+  } catch (e) {
+    console.error('加载统计失败', e);
+  }
+}
+
+function refreshSmartStats() {
+  loadSmartStats();
+}
+
+function openExportModal() {
+  showToast('功能开发中', 'info');
+}
+</script>
+</body>
+</html>
