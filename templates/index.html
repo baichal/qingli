@@ -3230,8 +3230,35 @@ async function loadPersonalDirs() {
 }
 
 function browsePersonalDir() {
-  // 这里可以添加文件选择器逻辑
-  showToast('功能开发中', 'info');
+  // 创建文件选择器元素
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.webkitdirectory = true;
+  input.directory = true;
+  input.multiple = false;
+  
+  // 监听选择事件
+  input.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (file.webkitRelativePath) {
+        // 获取目录路径
+        const dirPath = file.webkitRelativePath.split('/')[0];
+        const fullPath = file.path;
+        const dirFullPath = fullPath.substring(0, fullPath.lastIndexOf(dirPath));
+        const finalPath = dirFullPath + dirPath;
+        document.getElementById('newPersonalDir').value = finalPath;
+      } else {
+        // 兼容不同浏览器
+        const path = file.path;
+        const dirPath = path.substring(0, path.lastIndexOf('/'));
+        document.getElementById('newPersonalDir').value = dirPath;
+      }
+    }
+  });
+  
+  // 触发文件选择
+  input.click();
 }
 
 async function addPersonalDir() {
