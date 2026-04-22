@@ -13,38 +13,38 @@
 }
 
 :root {
-  --bg-primary: #f5f5f5;
+  --bg-primary: #fafafa;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f0f0f0;
+  --bg-tertiary: #f5f5f5;
   --bg-card: #ffffff;
-  --border: #e0e0e0;
-  --border-light: #d0d0d0;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-muted: #999999;
-  --accent-blue: #666666;
-  --accent-blue-hover: #555555;
+  --border: #e5e5e5;
+  --border-light: #f0f0f0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #8a8a8a;
+  --accent-blue: #333333;
+  --accent-blue-hover: #1a1a1a;
   --accent-blue-light: #f0f0f0;
-  --accent-green: #666666;
+  --accent-green: #333333;
   --accent-green-light: #f0f0f0;
-  --accent-yellow: #666666;
+  --accent-yellow: #333333;
   --accent-yellow-light: #f0f0f0;
-  --accent-red: #666666;
+  --accent-red: #333333;
   --accent-red-light: #f0f0f0;
-  --accent-purple: #666666;
+  --accent-purple: #333333;
   --accent-purple-light: #f0f0f0;
-  --success: #666666;
-  --warning: #666666;
-  --danger: #666666;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 8px 10px -4px rgba(0, 0, 0, 0.1);
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
+  --success: #333333;
+  --warning: #333333;
+  --danger: #333333;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
 }
 
 body {
@@ -76,6 +76,7 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 /* ===== Getting Started UI ===== */
@@ -155,13 +156,14 @@ body {
 /* ===== Header ===== */
 .header {
   background: var(--bg-secondary);
-  padding: 20px 28px;
+  padding: 24px 32px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
   position: relative;
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .logo-section {
@@ -174,16 +176,22 @@ body {
 }
 
 .logo-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  width: 56px;
+  height: 56px;
+  background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+}
+
+.logo-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .logo-text {
@@ -308,43 +316,36 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 14px 24px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 1px solid var(--border);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
   font-family: inherit;
   position: relative;
-  overflow: hidden;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn:hover::before {
-  left: 100%;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--text-muted);
 }
 
 .btn-primary {
-  background: var(--bg-secondary);
-  color: var(--accent-blue);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
+  background: var(--text-primary);
+  color: var(--bg-secondary);
+  border: 1px solid var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  background: var(--accent-blue-hover);
+  border-color: var(--accent-blue-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-success {
