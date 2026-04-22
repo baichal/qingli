@@ -3076,21 +3076,27 @@ async function clearAllPersonalDirs() {
 }
 
 async function markSelectedDirsAsPersonal() {
-  const selected = getFilteredResults().filter(f => State.selectedIds.has(f.id));
+  const selected = getFilteredResults().filter(function(f) {
+    return State.selectedIds.has(f.id);
+  });
   if (selected.length === 0) {
     showToast('请先选择文件', 'error');
     return;
   }
-  const dirs = [...new Set(selected.map(f => f.path.split('\\').slice(0, -1).join('\\'))];
+  const dirs = Array.from(new Set(selected.map(function(f) {
+    return f.path.split('\\').slice(0, -1).join('\\');
+  })));
   try {
     const res = await fetch('/api/smart/learn/batch_positive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dir_paths: dirs, all_file_paths: selected.map(f => f.path) }),
+      body: JSON.stringify({ dir_paths: dirs, all_file_paths: selected.map(function(f) {
+        return f.path;
+      }) }),
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`成功添加 ${dirs.length} 个目录到个人目录并学习`, 'success');
+      showToast('成功添加 ' + dirs.length + ' 个目录到个人目录并学习', 'success');
       clearSelection();
     } else {
       showToast(data.msg, 'error');
