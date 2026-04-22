@@ -474,6 +474,15 @@ def api_list_rules():
     })
 
 
+@app.route("/api/custom_rules/<rule_id>", methods=["GET"])
+def api_get_rule(rule_id):
+    """根据ID获取单条规则"""
+    rule = get_rule(rule_id)
+    if rule is None:
+        return jsonify({"success": False, "error": "规则不存在"})
+    return jsonify({"success": True, "rule": rule})
+
+
 def safe_reclassify():
     """安全地重新分类：只有在扫描停止时才执行"""
     # 检查扫描是否正在运行
