@@ -990,6 +990,13 @@ def api_scan_results():
 
 
 # ─────────────────────────────────────────
+# 配置
+# ─────────────────────────────────────────
+
+from config import Config
+
+
+# ─────────────────────────────────────────
 # 启动入口
 # ─────────────────────────────────────────
 
@@ -999,6 +1006,9 @@ if __name__ == "__main__":
     print("  访问地址: http://localhost:8899")
     print("  按 Ctrl+C 退出")
     print("=" * 50)
+
+    # 确保所有必需的文件和目录都存在
+    Config.ensure_default_files()
 
     # 自动打开浏览器
     t = threading.Thread(target=open_browser, daemon=True)
