@@ -2897,9 +2897,24 @@ async function loadRules() {
   try {
     const res = await fetch('/api/custom_rules');
     console.log('API响应状态:', res.status);
+    console.log('API响应URL:', res.url);
+    
+    // 检查响应类型
+    const contentType = res.headers.get('content-type');
+    console.log('响应内容类型:', contentType);
     
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      // 尝试获取错误页面内容
+      const errorText = await res.text();
+      console.error('API错误响应:', errorText.substring(0, 500)); // 只显示前500个字符
+      throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 100)}`);
+    }
+    
+    // 确保是JSON响应
+    if (!contentType || !contentType.includes('application/json')) {
+      const errorText = await res.text();
+      console.error('非JSON响应:', errorText.substring(0, 500));
+      throw new Error(`非JSON响应: ${errorText.substring(0, 100)}`);
     }
     
     const data = await res.json();
@@ -3009,6 +3024,9 @@ async function loadRules() {
           <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
           <div>加载规则失败</div>
           <div style="font-size: 13px; margin-top: 8px;">${e.message || '请检查控制台'}</div>
+          <div style="font-size: 12px; margin-top: 8px; color: var(--text-muted);">
+            提示：可能是服务器未运行或API路径错误
+          </div>
         </div>
       `;
     }
