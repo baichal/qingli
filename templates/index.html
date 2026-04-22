@@ -78,6 +78,80 @@ body {
   overflow: hidden;
 }
 
+/* ===== Getting Started UI ===== */
+.getting-started {
+  text-align: center;
+  padding: 48px 32px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.getting-started-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.getting-started-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 36px;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.quick-action-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-blue);
+}
+
+.qa-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.qa-content {
+  text-align: left;
+  flex: 1;
+}
+
+.qa-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.qa-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.get-started-btn-container {
+  margin-top: 12px;
+}
+
 /* ===== Header ===== */
 .header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -453,6 +527,43 @@ body {
   background: var(--bg-secondary);
 }
 
+.sidebar-footer-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.sidebar-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-quick-action {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.sidebar-quick-action:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-blue);
+  transform: translateX(4px);
+}
+
 /* ===== Content Area ===== */
 .content-area {
   flex: 1;
@@ -464,13 +575,23 @@ body {
 
 /* ===== Toolbar ===== */
 .toolbar {
-  padding: 20px 24px;
+  padding: 18px 24px;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border);
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 20px;
   align-items: center;
+}
+
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toolbar-section.actions-section {
+  margin-left: auto;
 }
 
 .search-box {
@@ -1311,11 +1432,33 @@ body {
   
   .toolbar {
     padding: 16px;
+    flex-direction: column;
+    align-items: stretch;
   }
   
   .search-box {
     min-width: 100%;
     max-width: 100%;
+  }
+  
+  .toolbar-section {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .toolbar-section.actions-section {
+    margin-left: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .getting-started {
+    padding: 32px 16px;
   }
 }
 </style>
@@ -1391,10 +1534,21 @@ body {
           </div>
         </div>
         <div class="sidebar-footer">
-          <button class="btn btn-sm" style="width: 100%; justify-content: center; gap: 8px; background: var(--accent-blue); color: white;" onclick="openRuleManager()">
-            <span>⚙️</span>
-            <span>自定义分类规则</span>
-          </button>
+          <div class="sidebar-footer-title">快速操作</div>
+          <div class="sidebar-quick-actions">
+            <button class="sidebar-quick-action" onclick="openRuleManager()">
+              <span>⚙️</span>
+              <span>自定义规则</span>
+            </button>
+            <button class="sidebar-quick-action" onclick="openPersonalDirManager()">
+              <span>🏠</span>
+              <span>个人目录</span>
+            </button>
+            <button class="sidebar-quick-action" onclick="openExportModal()">
+              <span>📋</span>
+              <span>导出清单</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1402,57 +1556,65 @@ body {
       <div class="content-area">
         <!-- Toolbar -->
         <div class="toolbar">
-          <div class="search-box">
-            <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="搜索文件名或路径..." oninput="debounceSearch(this.value)">
-          </div>
-
-          <div class="filter-group">
-            <select class="filter-select" id="timeRangeFilter" onchange="applyFilters(); toggleCustomDateInputs();">
-              <option value="all">⏰ 全部时间</option>
-              <option value="1month">⏰ 最近1个月</option>
-              <option value="3months">⏰ 最近3个月</option>
-              <option value="1year">⏰ 最近1年</option>
-              <option value="older1year">⏰ 1年以前</option>
-              <option value="custom">⏰ 自定义范围</option>
-            </select>
-
-            <div class="custom-date-inputs" id="customDateInputs" style="display: none; gap: 10px; align-items: center;">
-              <input type="date" id="timeStart" onchange="applyFilters()">
-              <span style="color: var(--text-muted);">至</span>
-              <input type="date" id="timeEnd" onchange="applyFilters()">
+          <div class="toolbar-section">
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" id="searchInput" placeholder="搜索文件名或路径..." oninput="debounceSearch(this.value)">
             </div>
-
-            <select class="filter-select" id="riskFilter" onchange="applyFilters();">
-              <option value="">全部风险</option>
-              <option value="high">🔴 高风险</option>
-              <option value="medium">🟡 中风险</option>
-              <option value="low">🟢 低风险</option>
-            </select>
-
-            <label class="filter-checkbox">
-              <input type="checkbox" id="personalOnly" onchange="applyFilters();">
-              <span>🏠 只看个人目录</span>
-            </label>
-
-            <label class="filter-checkbox">
-              <input type="checkbox" id="suspectedOnly" onchange="applyFilters();">
-              <span>❓ 只看疑似个人</span>
-            </label>
           </div>
 
-          <div class="toolbar-actions">
-            <button class="btn btn-sm btn-ghost" onclick="toggleSelectAll()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+          <div class="toolbar-section">
+            <div class="filter-group">
+              <select class="filter-select" id="timeRangeFilter" onchange="applyFilters(); toggleCustomDateInputs();">
+                <option value="all">⏰ 全部时间</option>
+                <option value="1month">⏰ 最近1个月</option>
+                <option value="3months">⏰ 最近3个月</option>
+                <option value="1year">⏰ 最近1年</option>
+                <option value="older1year">⏰ 1年以前</option>
+                <option value="custom">⏰ 自定义范围</option>
+              </select>
+
+              <div class="custom-date-inputs" id="customDateInputs" style="display: none; gap: 10px; align-items: center;">
+                <input type="date" id="timeStart" onchange="applyFilters()">
+                <span style="color: var(--text-muted);">至</span>
+                <input type="date" id="timeEnd" onchange="applyFilters()">
+              </div>
+
+              <select class="filter-select" id="riskFilter" onchange="applyFilters();">
+                <option value="">全部风险</option>
+                <option value="high">🔴 高风险</option>
+                <option value="medium">🟡 中风险</option>
+                <option value="low">🟢 低风险</option>
+              </select>
+
+              <label class="filter-checkbox">
+                <input type="checkbox" id="personalOnly" onchange="applyFilters();">
+                <span>🏠 只看个人目录</span>
+              </label>
+
+              <label class="filter-checkbox">
+                <input type="checkbox" id="suspectedOnly" onchange="applyFilters();">
+                <span>❓ 只看疑似个人</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="toolbar-section actions-section">
+            <button class="btn btn-sm btn-primary" onclick="toggleSelectAll()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
               <span>☑</span>
               <span>全选</span>
             </button>
-            <button class="btn btn-sm btn-ghost" onclick="openPersonalDirManager()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+            <button class="btn btn-sm" onclick="openPersonalDirManager()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
               <span>🏠</span>
               <span>个人目录</span>
             </button>
-            <button class="btn btn-sm btn-ghost" onclick="openSmartStats()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+            <button class="btn btn-sm" onclick="openSmartStats()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
               <span>🧠</span>
               <span>智能统计</span>
+            </button>
+            <button class="btn btn-sm" onclick="openRuleManager()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
+              <span>⚙️</span>
+              <span>规则</span>
             </button>
           </div>
         </div>
@@ -1464,10 +1626,6 @@ body {
             <span id="selCount">已选择 0 个文件</span>
           </div>
           <div class="selection-actions">
-            <button class="btn btn-sm btn-primary" onclick="markSelectedDirsAsPersonal()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
-              <span>🧠</span>
-              <span>智能学习选中目录</span>
-            </button>
             <button class="btn btn-sm btn-warning" onclick="deleteSelected('trash')">
               <span>📦</span>
               <span>移入回收站</span>
@@ -1475,6 +1633,10 @@ body {
             <button class="btn btn-sm btn-danger" onclick="deleteSelected('permanent')">
               <span>🗑️</span>
               <span>永久删除</span>
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="markSelectedDirsAsPersonal()" style="background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%); color: white;">
+              <span>🧠</span>
+              <span>标记为个人目录</span>
             </button>
             <button class="btn btn-sm" onclick="clearSelection()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">
               <span>✕</span>
@@ -1487,10 +1649,43 @@ body {
         <div class="file-list-container">
           <div class="file-list-wrapper" id="fileListWrap">
             <div class="empty-state" id="emptyState">
-              <div class="empty-icon">📂</div>
-              <div class="empty-text">
-                还没有扫描结果<br>
-                <strong>点击右上角「开始扫描」启动全盘扫描</strong>
+              <div class="getting-started">
+                <div style="font-size: 48px; margin-bottom: 16px;">🚀</div>
+                <div class="getting-started-title">开始使用 FileClean Pro</div>
+                <div class="getting-started-desc">
+                  一键扫描您的电脑，智能识别并分类文件，帮您高效清理不需要的文件
+                </div>
+                
+                <div class="quick-actions">
+                  <div class="quick-action-card">
+                    <div class="qa-icon">1️⃣</div>
+                    <div class="qa-content">
+                      <div class="qa-title">选择扫描盘符</div>
+                      <div class="qa-desc">选择需要扫描的驱动器</div>
+                    </div>
+                  </div>
+                  <div class="quick-action-card">
+                    <div class="qa-icon">2️⃣</div>
+                    <div class="qa-content">
+                      <div class="qa-title">启动扫描</div>
+                      <div class="qa-desc">系统会智能分类和分析文件</div>
+                    </div>
+                  </div>
+                  <div class="quick-action-card">
+                    <div class="qa-icon">3️⃣</div>
+                    <div class="qa-content">
+                      <div class="qa-title">清理文件</div>
+                      <div class="qa-desc">选择不需要的文件进行清理</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="get-started-btn-container">
+                  <button class="btn btn-primary btn-lg" onclick="openScanConfig()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; padding: 16px 32px; font-size: 16px;">
+                    <span>▶</span>
+                    <span>开始使用</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2790,17 +2985,12 @@ function addCondition(condition = null) {
   condDiv.style = 'display: flex; gap: 10px; align-items: center; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md);';
   condDiv.innerHTML = `
     <select class="cond-type" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
-      <option value="filename">文件名</option>
+      <option value="filename_keyword">文件名包含</option>
+      <option value="filename_regex">文件名正则</option>
+      <option value="path_contains">路径包含</option>
+      <option value="path_regex">路径正则</option>
       <option value="extension">扩展名</option>
-      <option value="path">路径</option>
-      <option value="content">内容</option>
-    </select>
-    <select class="cond-op" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
-      <option value="contains">包含</option>
-      <option value="equals">等于</option>
-      <option value="starts_with">开头是</option>
-      <option value="ends_with">结尾是</option>
-      <option value="regex">正则</option>
+      <option value="content_keyword">内容关键词</option>
     </select>
     <input type="text" class="cond-value" placeholder="输入值" style="flex: 2; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
     <button class="btn btn-sm" onclick="removeCondition(this)" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
@@ -2809,7 +2999,6 @@ function addCondition(condition = null) {
   `;
   if (condition) {
     condDiv.querySelector('.cond-type').value = condition.type;
-    condDiv.querySelector('.cond-op').value = condition.operator;
     condDiv.querySelector('.cond-value').value = condition.value;
   }
   list.appendChild(condDiv);
@@ -2831,10 +3020,9 @@ async function saveRule() {
   const conditions = [];
   document.querySelectorAll('.condition-item').forEach(item => {
     const type = item.querySelector('.cond-type').value;
-    const op = item.querySelector('.cond-op').value;
     const value = item.querySelector('.cond-value').value.trim();
     if (value) {
-      conditions.push({ type, operator: op, value });
+      conditions.push({ type, value });
     }
   });
   if (conditions.length === 0) {
@@ -2923,10 +3111,9 @@ async function runTestRule() {
   const conditions = [];
   document.querySelectorAll('.condition-item').forEach(item => {
     const type = item.querySelector('.cond-type').value;
-    const op = item.querySelector('.cond-op').value;
     const value = item.querySelector('.cond-value').value.trim();
     if (value) {
-      conditions.push({ type, operator: op, value });
+      conditions.push({ type, value });
     }
   });
   if (conditions.length === 0) {
@@ -2961,7 +3148,7 @@ async function runTestRule() {
       }
       conditionResults.innerHTML = data.result.condition_results.map(cr => `
         <div style="padding: 6px 10px; border-radius: var(--radius-sm); ${cr.hit ? 'background: var(--accent-green-light); color: var(--accent-green);' : 'background: var(--accent-red-light); color: var(--accent-red);'}">
-          ${cr.condition.type}: ${cr.condition.operator} "${cr.condition.value}" → ${cr.hit ? '✅' : '❌'}
+          ${cr.type_label}: "${cr.value}" → ${cr.hit ? '✅' : '❌'}
         </div>
       `).join('');
     }
