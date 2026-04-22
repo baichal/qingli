@@ -13,43 +13,43 @@
 }
 
 :root {
-  --bg-primary: #f8fafc;
+  --bg-primary: #fafafa;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
+  --bg-tertiary: #f5f5f5;
   --bg-card: #ffffff;
-  --border: #e2e8f0;
-  --border-light: #cbd5e1;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #3b82f6;
-  --accent-blue-light: #dbeafe;
-  --accent-green: #059669;
-  --accent-green-light: #d1fae5;
-  --accent-yellow: #d97706;
-  --accent-yellow-light: #fef3c7;
-  --accent-red: #dc2626;
-  --accent-red-light: #fee2e2;
-  --accent-purple: #7c3aed;
-  --accent-purple-light: #ede9fe;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --border: #e5e5e5;
+  --border-light: #f0f0f0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #8a8a8a;
+  --accent-blue: #333333;
+  --accent-blue-hover: #1a1a1a;
+  --accent-blue-light: #f0f0f0;
+  --accent-green: #333333;
+  --accent-green-light: #f0f0f0;
+  --accent-yellow: #333333;
+  --accent-yellow-light: #f0f0f0;
+  --accent-red: #333333;
+  --accent-red-light: #f0f0f0;
+  --accent-purple: #333333;
+  --accent-purple-light: #f0f0f0;
+  --success: #333333;
+  --warning: #333333;
+  --danger: #333333;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: var(--bg-primary);
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
@@ -62,7 +62,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-primary);
   padding: 16px;
   gap: 16px;
 }
@@ -76,6 +76,7 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 /* ===== Getting Started UI ===== */
@@ -154,23 +155,15 @@ body {
 
 /* ===== Header ===== */
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px 28px;
+  background: var(--bg-secondary);
+  padding: 24px 32px;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
   position: relative;
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.3;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .logo-section {
@@ -183,28 +176,34 @@ body {
 }
 
 .logo-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  width: 56px;
+  height: 56px;
+  background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 28px;
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  transition: all var(--transition-normal);
+}
+
+.logo-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .logo-text {
   font-size: 22px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
 }
 
 .logo-sub {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-weight: 500;
   margin-top: 2px;
 }
@@ -222,30 +221,30 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  background: var(--bg-tertiary);
   padding: 10px 18px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .status-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--text-muted);
   transition: all var(--transition-normal);
 }
 
 .status-dot.scanning {
-  background: #4ade80;
+  background: var(--accent-green);
   animation: pulse 1.5s infinite;
-  box-shadow: 0 0 16px rgba(74, 222, 128, 0.6);
+  box-shadow: 0 0 16px rgba(102, 102, 102, 0.4);
 }
 
 .status-dot.complete {
-  background: #60a5fa;
-  box-shadow: 0 0 16px rgba(96, 165, 250, 0.6);
+  background: var(--accent-blue);
+  box-shadow: 0 0 16px rgba(102, 102, 102, 0.4);
 }
 
 @keyframes pulse {
@@ -255,7 +254,7 @@ body {
 
 .status-text {
   font-weight: 500;
-  color: #ffffff;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
@@ -266,15 +265,16 @@ body {
 
 .progress-bar {
   height: 8px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--bg-tertiary);
   border-radius: 9999px;
   overflow: hidden;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4ade80 0%, #60a5fa 50%, #a78bfa 100%);
+  background: var(--accent-blue);
   border-radius: 9999px;
   transition: width var(--transition-normal);
   position: relative;
@@ -299,7 +299,7 @@ body {
 .progress-stats {
   margin-top: 6px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -316,47 +316,42 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 14px 24px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 1px solid var(--border);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-normal);
   font-family: inherit;
   position: relative;
-  overflow: hidden;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn:hover::before {
-  left: 100%;
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--text-muted);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
-  color: var(--accent-blue);
-  box-shadow: var(--shadow-md);
+  background: var(--text-primary);
+  color: var(--bg-secondary);
+  border: 1px solid var(--text-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  background: var(--accent-blue-hover);
+  border-color: var(--accent-blue-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--accent-green);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
 }
 
@@ -366,8 +361,9 @@ body {
 }
 
 .btn-warning {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--accent-yellow);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
 }
 
@@ -377,8 +373,9 @@ body {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+  background: var(--bg-secondary);
+  color: var(--accent-red);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
 }
 
@@ -388,15 +385,14 @@ body {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
 }
 
 .btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--bg-secondary);
+  border-color: var(--border);
   transform: translateY(-2px);
 }
 
@@ -474,9 +470,10 @@ body {
 }
 
 .sidebar-item.active {
-  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+  background: var(--bg-secondary);
   border-color: var(--accent-blue);
   color: var(--accent-blue);
+  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-icon {
@@ -493,7 +490,7 @@ body {
 }
 
 .sidebar-item.active .sidebar-icon {
-  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+  background: var(--accent-blue);
   color: white;
 }
 
@@ -680,20 +677,16 @@ body {
     background: var(--bg-secondary);
     color: var(--text-primary);
     padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    transition: all var(--transition-fast);
-    margin: 4px 8px;
   }
 
   .filter-select option:hover {
-    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
-    color: var(--accent-blue);
-    transform: translateX(4px);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
   }
 
   .filter-select option:checked {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-    color: white;
+    background: var(--text-primary);
+    color: var(--bg-secondary);
     font-weight: 600;
   }
 
@@ -739,9 +732,9 @@ body {
   }
 
   .filter-checkbox input[type="checkbox"]:checked {
-    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-    border-color: var(--accent-blue);
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    background: var(--text-primary);
+    border-color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .filter-checkbox input[type="checkbox"]:checked::after {
@@ -750,7 +743,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
+    color: var(--bg-secondary);
     font-size: 14px;
     font-weight: bold;
   }
@@ -763,13 +756,14 @@ body {
 
 /* ===== Selection Bar ===== */
 .selection-bar {
-  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
-  border-bottom: 1px solid rgba(37, 99, 235, 0.2);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
   padding: 14px 24px;
   display: none;
   align-items: center;
   gap: 18px;
   animation: slideDown 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 @keyframes slideDown {
@@ -902,22 +896,22 @@ body {
 }
 
 .file-table tbody tr.selected {
-    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+    background: var(--bg-tertiary);
     border-left: 4px solid var(--accent-blue);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transform: scale(1.01);
     z-index: 1;
     position: relative;
   }
 
   .file-table tbody tr.selected:hover {
-    background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
-    border-left-color: var(--accent-purple);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+    background: var(--bg-tertiary);
+    border-left-color: var(--accent-blue);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   }
 
 .file-table tbody tr.preview-active {
-  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+  background: var(--bg-tertiary);
   border-left-color: var(--accent-blue);
 }
 
@@ -1000,7 +994,7 @@ body {
 /* ===== Preview Panel ===== */
 .preview-panel {
   border-top: 1px solid var(--border);
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: var(--bg-secondary);
   display: flex;
   flex-direction: column;
   transition: all var(--transition-normal);
@@ -1132,7 +1126,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-sm);
 }
 
 .modal-title {
@@ -1228,7 +1223,7 @@ body {
 
 .drive-card.selected {
   border-color: var(--accent-blue);
-  background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-purple-light) 100%);
+  background: var(--bg-secondary);
   box-shadow: var(--shadow-md);
 }
 
@@ -1566,7 +1561,7 @@ body {
               <span>🔍</span>
               <input type="text" id="searchInput" placeholder="搜索文件名或路径..." oninput="debounceSearch(this.value)">
             </div>
-            <button class="btn btn-sm btn-primary" onclick="toggleSelectAll()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+            <button class="btn btn-sm" onclick="toggleSelectAll()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
               <span>☑</span>
               <span>全选</span>
             </button>
@@ -1638,15 +1633,15 @@ body {
             <span id="selCount">已选择 0 个文件</span>
           </div>
           <div class="selection-actions">
-            <button class="btn btn-sm btn-primary" onclick="markSelectedDirsAsPersonal()" style="background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%); color: white;">
+            <button class="btn btn-sm" onclick="markSelectedDirsAsPersonal()" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border);">
               <span>🧠</span>
               <span>标记为个人目录</span>
             </button>
-            <button class="btn btn-sm btn-warning" onclick="deleteSelected('trash')">
+            <button class="btn btn-sm" onclick="deleteSelected('trash')" style="background: var(--bg-tertiary); color: var(--accent-yellow); border: 1px solid var(--border);">
               <span>📦</span>
               <span>移入回收站</span>
             </button>
-            <button class="btn btn-sm btn-danger" onclick="deleteSelected('permanent')">
+            <button class="btn btn-sm" onclick="deleteSelected('permanent')" style="background: var(--bg-tertiary); color: var(--accent-red); border: 1px solid var(--border);">
               <span>🗑️</span>
               <span>永久删除</span>
             </button>
@@ -1693,7 +1688,7 @@ body {
                 </div>
                 
                 <div class="get-started-btn-container">
-                  <button class="btn btn-primary btn-lg" onclick="openScanConfig()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white; padding: 16px 32px; font-size: 16px;">
+                  <button class="btn btn-primary btn-lg" onclick="openScanConfig()" style="background: var(--text-primary); color: var(--bg-secondary); border-color: var(--text-primary); padding: 16px 32px; font-size: 16px;">
                     <span>▶</span>
                     <span>开始使用</span>
                   </button>
@@ -1710,12 +1705,12 @@ body {
                       #checkAll:hover {
                         border-color: var(--accent-blue);
                         transform: scale(1.1);
-                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
                       }
                       #checkAll:checked {
-                        background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-                        border-color: var(--accent-blue);
-                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+                        background: var(--text-primary);
+                        border-color: var(--text-primary);
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
                       }
                       #checkAll:checked::after {
                         content: '✓';
@@ -1723,7 +1718,7 @@ body {
                         top: 50%;
                         left: 50%;
                         transform: translate(-50%, -50%);
-                        color: white;
+                        color: var(--bg-secondary);
                         font-size: 14px;
                         font-weight: bold;
                       }
@@ -1780,7 +1775,7 @@ body {
     </div>
     <div class="modal-body">
       <!-- Resume Info -->
-      <div id="resumeInfo" style="display: none; margin-bottom: 24px; background: linear-gradient(135deg, var(--accent-blue-light) 0%, var(--accent-green-light) 100%); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;">
+      <div id="resumeInfo" style="display: none; margin-bottom: 24px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <span style="font-size: 26px;">🔄</span>
@@ -1823,7 +1818,7 @@ E:\archive"></textarea>
     </div>
     <div class="modal-footer">
       <button class="btn btn-sm" onclick="closeScanModal()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
-      <button class="btn btn-primary" onclick="startScan()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">开始扫描</button>
+      <button class="btn btn-primary" onclick="startScan()" style="background: var(--text-primary); color: var(--bg-secondary); border-color: var(--text-primary);">开始扫描</button>
     </div>
   </div>
 </div>
@@ -1838,7 +1833,7 @@ E:\archive"></textarea>
       <div class="file-list-preview" id="confirmFileList" style="max-height: 130px; overflow-y: auto; text-align: left; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 16px;"></div>
       <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px;">
         <button class="btn btn-sm" onclick="closeConfirm()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
-        <button class="btn" id="confirmBtn" onclick="executeDelete()" style="background: linear-gradient(135deg, var(--accent-red) 0%, #dc2626 100%); color: white;">确认</button>
+        <button class="btn" id="confirmBtn" onclick="executeDelete()" style="background: var(--accent-red); color: var(--bg-secondary); border: 1px solid var(--accent-red);">确认</button>
       </div>
     </div>
   </div>
@@ -1853,7 +1848,7 @@ E:\archive"></textarea>
         <span>自定义分类规则</span>
       </div>
       <div style="display: flex; gap: 10px; align-items: center;">
-        <button class="btn btn-danger btn-sm" id="clearRulesBtn" onclick="confirmClearRules()">
+        <button class="btn btn-sm" id="clearRulesBtn" onclick="confirmClearRules()" style="background: var(--bg-tertiary); color: var(--accent-red); border: 1px solid var(--border);">
           <span>🗑️</span>
           <span>一键清除</span>
         </button>
@@ -1866,7 +1861,7 @@ E:\archive"></textarea>
           <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
             已有 <strong style="color: var(--text-primary);" id="ruleCount">0</strong> 条自定义规则
           </span>
-          <button class="btn btn-sm btn-primary" id="addRuleBtn" onclick="openRuleEditor(null)" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+          <button class="btn btn-sm btn-primary" id="addRuleBtn" onclick="openRuleEditor(null)" style="background: var(--text-primary); color: var(--bg-secondary); border-color: var(--text-primary);">
             <span>+</span>
             <span>新增规则</span>
           </button>
@@ -1954,7 +1949,7 @@ E:\archive"></textarea>
         <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 12px;">🧪 测试规则</div>
         <div style="display: flex; gap: 12px; margin-bottom: 14px;">
           <input type="text" id="testPath" placeholder="输入文件路径测试，例如：D:\personal\我的简历2024.docx" style="flex: 1;">
-          <button class="btn btn-sm" onclick="runTestRule()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+          <button class="btn btn-sm" onclick="runTestRule()" style="background: var(--text-primary); color: var(--bg-secondary); border-color: var(--text-primary);">
             <span>▶</span>
             <span>测试</span>
           </button>
@@ -1967,12 +1962,12 @@ E:\archive"></textarea>
       </div>
 
       <!-- Error Display -->
-      <div id="editorErrors" style="display: none; margin-top: 20px; background: var(--accent-red-light); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: var(--radius-md); padding: 14px 18px; font-size: 13px; color: var(--accent-red);">
+      <div id="editorErrors" style="display: none; margin-top: 20px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 18px; font-size: 13px; color: var(--accent-red);">
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-sm" onclick="closeRuleEditor()" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">取消</button>
-      <button class="btn btn-primary" onclick="saveRule()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+      <button class="btn btn-primary" onclick="saveRule()" style="background: var(--text-primary); color: var(--bg-secondary); border-color: var(--text-primary);">
         <span>💾</span>
         <span>保存规则</span>
       </button>
@@ -2000,7 +1995,7 @@ E:\archive"></textarea>
           <span>📂</span>
           <span>选择</span>
         </button>
-        <button class="btn btn-sm btn-primary" onclick="addPersonalDir()" style="background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%); color: white;">
+        <button class="btn btn-sm" onclick="addPersonalDir()" style="background: var(--text-primary); color: var(--bg-secondary); border: 1px solid var(--text-primary);">
           <span>➕</span>
           <span>添加</span>
         </button>
@@ -2009,7 +2004,7 @@ E:\archive"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-sm btn-danger" onclick="clearAllPersonalDirs()">
+      <button class="btn btn-sm" onclick="clearAllPersonalDirs()" style="background: var(--bg-tertiary); color: var(--accent-red); border: 1px solid var(--border);">
         <span>🗑️</span>
         <span>清空全部</span>
       </button>
@@ -2511,12 +2506,12 @@ function renderTable(results) {
           .file-check:hover {
             border-color: var(--accent-blue);
             transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
           }
           .file-check:checked {
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-            border-color: var(--accent-blue);
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
           }
           .file-check:checked::after {
             content: '✓';
@@ -2524,7 +2519,7 @@ function renderTable(results) {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
+            color: var(--bg-secondary);
             font-size: 14px;
             font-weight: bold;
           }
@@ -2898,17 +2893,60 @@ function closeRuleManager() {
 }
 
 async function loadRules() {
+  console.log('开始加载自定义规则...');
   try {
     const res = await fetch('/api/custom_rules');
+    console.log('API响应状态:', res.status);
+    console.log('API响应URL:', res.url);
+    
+    // 检查响应类型
+    const contentType = res.headers.get('content-type');
+    console.log('响应内容类型:', contentType);
+    
+    if (!res.ok) {
+      // 尝试获取错误页面内容
+      const errorText = await res.text();
+      console.error('API错误响应:', errorText.substring(0, 500)); // 只显示前500个字符
+      throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 100)}`);
+    }
+    
+    // 确保是JSON响应
+    if (!contentType || !contentType.includes('application/json')) {
+      const errorText = await res.text();
+      console.error('非JSON响应:', errorText.substring(0, 500));
+      throw new Error(`非JSON响应: ${errorText.substring(0, 100)}`);
+    }
+    
     const data = await res.json();
+    console.log('API返回数据:', data);
+    
     const ruleList = document.getElementById('ruleListBody');
     const ruleCount = document.getElementById('ruleCount');
+    
+    if (!ruleList || !ruleCount) {
+      console.error('找不到规则列表元素');
+      return;
+    }
+    
     ruleCount.textContent = data.total;
     ruleList.innerHTML = '';
+    
+    if (!data.rules || data.rules.length === 0) {
+      ruleList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+          <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+          <div>还没有自定义规则</div>
+          <div style="font-size: 13px; margin-top: 8px;">点击"新增规则"来创建第一条</div>
+        </div>
+      `;
+      return;
+    }
+    
     data.rules.forEach((rule, index) => {
       const ruleCard = document.createElement('div');
       ruleCard.className = 'rule-card';
-      ruleCard.style = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; transition: all var(--transition-normal); box-shadow: var(--shadow-sm);';
+      ruleCard.style.cssText = 'background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; transition: all var(--transition-normal); box-shadow: var(--shadow-sm);';
+      
       ruleCard.onmouseover = () => {
         ruleCard.style.transform = 'translateY(-2px)';
         ruleCard.style.boxShadow = 'var(--shadow-md)';
@@ -2917,31 +2955,81 @@ async function loadRules() {
         ruleCard.style.transform = 'translateY(0)';
         ruleCard.style.boxShadow = 'var(--shadow-sm)';
       };
-      ruleCard.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="font-size: 24px;">${rule.icon || '📁'}</div>
-            <div>
-              <div style="font-weight: 600; font-size: 14px;">${rule.name}</div>
-              <div style="font-size: 12px; color: var(--text-muted);">${rule.conditions.length} 个条件</div>
-            </div>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm" onclick="openRuleEditor('${rule.id}')" style="background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;">
-              ✏️
-            </button>
-            <button class="btn btn-sm" onclick="deleteRule('${rule.id}')" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
-              🗑️
-            </button>
-          </div>
-        </div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">风险等级: ${rule.risk === 'high' ? '🔴 高' : rule.risk === 'medium' ? '🟡 中' : '🟢 低'}</div>
-        <div style="font-size: 12px; color: var(--text-muted);">状态: ${rule.enabled ? '✅ 启用' : '❌ 禁用'}</div>
-      `;
+      
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn btn-sm';
+      editBtn.style.cssText = 'background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); padding: 6px 10px;';
+      editBtn.textContent = '✏️';
+      editBtn.onclick = () => openRuleEditor(rule.id);
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn-sm';
+      deleteBtn.style.cssText = 'background: var(--bg-tertiary); color: var(--accent-red); border: 1px solid var(--border); padding: 6px 10px;';
+      deleteBtn.textContent = '🗑️';
+      deleteBtn.onclick = () => deleteRule(rule.id);
+      
+      const btnGroup = document.createElement('div');
+      btnGroup.style.cssText = 'display: flex; gap: 8px;';
+      btnGroup.appendChild(editBtn);
+      btnGroup.appendChild(deleteBtn);
+      
+      const iconDiv = document.createElement('div');
+      iconDiv.style.fontSize = '24px';
+      iconDiv.textContent = rule.icon || '📁';
+      
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'font-weight: 600; font-size: 14px;';
+      nameDiv.textContent = rule.name;
+      
+      const condDiv = document.createElement('div');
+      condDiv.style.cssText = 'font-size: 12px; color: var(--text-muted);';
+      condDiv.textContent = `${rule.conditions.length} 个条件`;
+      
+      const infoDiv = document.createElement('div');
+      infoDiv.appendChild(nameDiv);
+      infoDiv.appendChild(condDiv);
+      
+      const leftDiv = document.createElement('div');
+      leftDiv.style.cssText = 'display: flex; align-items: center; gap: 12px;';
+      leftDiv.appendChild(iconDiv);
+      leftDiv.appendChild(infoDiv);
+      
+      const topDiv = document.createElement('div');
+      topDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;';
+      topDiv.appendChild(leftDiv);
+      topDiv.appendChild(btnGroup);
+      
+      const riskDiv = document.createElement('div');
+      riskDiv.style.cssText = 'font-size: 12px; color: var(--text-muted); margin-bottom: 8px;';
+      riskDiv.textContent = `风险等级: ${rule.risk === 'high' ? '🔴 高' : rule.risk === 'medium' ? '🟡 中' : '🟢 低'}`;
+      
+      const statusDiv = document.createElement('div');
+      statusDiv.style.cssText = 'font-size: 12px; color: var(--text-muted);';
+      statusDiv.textContent = `状态: ${rule.enabled ? '✅ 启用' : '❌ 禁用'}`;
+      
+      ruleCard.appendChild(topDiv);
+      ruleCard.appendChild(riskDiv);
+      ruleCard.appendChild(statusDiv);
+      
       ruleList.appendChild(ruleCard);
     });
+    
+    console.log('规则加载完成，共', data.rules.length, '条');
   } catch (e) {
     console.error('加载规则失败', e);
+    const ruleList = document.getElementById('ruleListBody');
+    if (ruleList) {
+      ruleList.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+          <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+          <div>加载规则失败</div>
+          <div style="font-size: 13px; margin-top: 8px;">${e.message || '请检查控制台'}</div>
+          <div style="font-size: 12px; margin-top: 8px; color: var(--text-muted);">
+            提示：可能是服务器未运行或API路径错误
+          </div>
+        </div>
+      `;
+    }
   }
 }
 
@@ -3003,9 +3091,9 @@ function addCondition(condition = null) {
   const index = list.children.length;
   const condDiv = document.createElement('div');
   condDiv.className = 'condition-item';
-  condDiv.style = 'display: flex; gap: 10px; align-items: center; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md);';
+  condDiv.style.cssText = 'display: flex; gap: 10px; align-items: center; padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius-md);';
   condDiv.innerHTML = `
-    <select class="cond-type" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
+    <select class="cond-type" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); font-family: inherit;">
       <option value="filename_keyword">文件名包含</option>
       <option value="filename_regex">文件名正则</option>
       <option value="path_contains">路径包含</option>
@@ -3013,8 +3101,8 @@ function addCondition(condition = null) {
       <option value="extension">扩展名</option>
       <option value="content_keyword">内容关键词</option>
     </select>
-    <input type="text" class="cond-value" placeholder="输入值" style="flex: 2; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary);">
-    <button class="btn btn-sm" onclick="removeCondition(this)" style="background: var(--accent-red-light); color: var(--accent-red); border: 1px solid var(--accent-red); padding: 6px 10px;">
+    <input type="text" class="cond-value" placeholder="输入值" style="flex: 2; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-secondary); color: var(--text-primary); font-family: inherit;">
+    <button class="btn btn-sm" onclick="removeCondition(this)" style="background: var(--bg-tertiary); color: var(--accent-red); border: 1px solid var(--border); padding: 6px 10px;">
       ✕
     </button>
   `;
@@ -3230,8 +3318,35 @@ async function loadPersonalDirs() {
 }
 
 function browsePersonalDir() {
-  // 这里可以添加文件选择器逻辑
-  showToast('功能开发中', 'info');
+  // 创建文件选择器元素
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.webkitdirectory = true;
+  input.directory = true;
+  input.multiple = false;
+  
+  // 监听选择事件
+  input.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (file.webkitRelativePath) {
+        // 获取目录路径
+        const dirPath = file.webkitRelativePath.split('/')[0];
+        const fullPath = file.path;
+        const dirFullPath = fullPath.substring(0, fullPath.lastIndexOf(dirPath));
+        const finalPath = dirFullPath + dirPath;
+        document.getElementById('newPersonalDir').value = finalPath;
+      } else {
+        // 兼容不同浏览器
+        const path = file.path;
+        const dirPath = path.substring(0, path.lastIndexOf('/'));
+        document.getElementById('newPersonalDir').value = dirPath;
+      }
+    }
+  });
+  
+  // 触发文件选择
+  input.click();
 }
 
 async function addPersonalDir() {
